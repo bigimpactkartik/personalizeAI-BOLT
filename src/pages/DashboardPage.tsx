@@ -1,0 +1,179 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useProjects } from '../contexts/ProjectContext';
+import Button from '../components/UI/Button';
+import Card from '../components/UI/Card';
+import ProgressBar from '../components/UI/ProgressBar';
+
+const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
+  const { projects } = useProjects();
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case 'processing':
+        return <Clock className="h-5 w-5 text-blue-600" />;
+      case 'failed':
+        return <XCircle className="h-5 w-5 text-red-600" />;
+      default:
+        return <AlertCircle className="h-5 w-5 text-yellow-600" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'green';
+      case 'processing':
+        return 'blue';
+      case 'failed':
+        return 'red';
+      default:
+        return 'yellow';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'Completed';
+      case 'processing':
+        return 'Processing';
+      case 'failed':
+        return 'Failed';
+      default:
+        return 'Pending';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {user?.name}!
+          </h1>
+          <p className="text-gray-600">
+            Manage your cold email campaigns and track their performance
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="text-center">
+            <div className="text-2xl font-bold text-gray-900 mb-1">
+              {projects.length}
+            </div>
+            <div className="text-sm text-gray-600">Total Projects</div>
+          </Card>
+          <Card className="text-center">
+            <div className="text-2xl font-bold text-green-600 mb-1">
+              {projects.filter(p => p.status === 'completed').length}
+            </div>
+            <div className="text-sm text-gray-600">Completed</div>
+          </Card>
+          <Card className="text-center">
+            <div className="text-2xl font-bold text-blue-600 mb-1">
+              {projects.filter(p => p.status === 'processing').length}
+            </div>
+            <div className="text-sm text-gray-600">Processing</div>
+          </Card>
+          <Card className="text-center">
+            <div className="text-2xl font-bold text-yellow-600 mb-1">
+              {projects.filter(p => p.status === 'pending').length}
+            </div>
+            <div className="text-sm text-gray-600">Pending</div>
+          </Card>
+        </div>
+
+        {/* Create New Project Button */}
+        <div className="mb-8">
+          <Link to="/create-project">
+            <Button size="lg" className="w-full sm:w-auto">
+              <Plus className="mr-2 h-5 w-5" />
+              Create New Project
+            </Button>
+          </Link>
+        </div>
+
+        {/* Projects List */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-gray-900">Your Projects</h2>
+          
+          {projects.length === 0 ? (
+            <Card className="text-center py-12">
+              <div className="text-gray-500 mb-4">
+                <Plus className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
+                <p className="text-gray-600">Create your first project to get started with AI-powered cold emails</p>
+              </div>
+              <Link to="/create-project">
+                <Button>Create Your First Project</Button>
+              </Link>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {projects.map((project) => (
+                <Card key={project.id} className="hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {project.name}
+                        </h3>
+                        <div className="flex items-center space-x-1">
+                          {getStatusIcon(project.status)}
+                          <span className="text-sm font-medium text-gray-600">
+                            {getStatusText(project.status)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <p className="text-gray-600 mb-3">{project.description}</p>
+                      
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <span>Created: {project.createdAt}</span>
+                        {project.status === 'processing' && (
+                          <div className="flex items-center space-x-2">
+                            <span>Progress:</span>
+                            <div className="w-24">
+                              <ProgressBar 
+                                value={project.progress} 
+                                size="sm" 
+                                color={getStatusColor(project.status)}
+                              />
+                            </div>
+                            <span>{project.progress}%</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      {project.status === 'completed' && project.resultFile && (
+                        <Button variant="outline" size="sm">
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="sm">
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardPage;
