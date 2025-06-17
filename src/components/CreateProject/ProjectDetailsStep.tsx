@@ -51,15 +51,15 @@ const ProjectDetailsStep: React.FC<ProjectDetailsStepProps> = ({
 
   return (
     <div className="fade-in-up">
-      <Card className="p-8">
+      <Card className="p-6 sm:p-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Project Details</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Project Details</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             Provide basic information about your cold email campaign
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Input
             label="Project Name"
             placeholder="e.g., Tech Startup Outreach Q1 2024"
@@ -98,8 +98,8 @@ const ProjectDetailsStep: React.FC<ProjectDetailsStepProps> = ({
           />
         </div>
 
-        <div className="flex justify-end mt-8">
-          <Button onClick={handleNext} size="lg" className="transition-all duration-200">
+        <div className="flex justify-end mt-6 sm:mt-8">
+          <Button onClick={handleNext} size="lg" className="w-full sm:w-auto transition-all duration-200">
             Next: Upload Data
           </Button>
         </div>

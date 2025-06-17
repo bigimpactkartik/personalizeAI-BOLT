@@ -41,10 +41,10 @@ const CreateProjectPage: React.FC = () => {
   ];
 
   const stepIcons = [
-    <FileText className="h-5 w-5" />,
-    <Upload className="h-5 w-5" />,
-    <Settings className="h-5 w-5" />,
-    <CreditCard className="h-5 w-5" />
+    <FileText className="h-4 w-4 sm:h-5 sm:w-5" />,
+    <Upload className="h-4 w-4 sm:h-5 sm:w-5" />,
+    <Settings className="h-4 w-4 sm:h-5 sm:w-5" />,
+    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
   ];
 
   function getDefaultCompanyTargeting(): CompanyTargetingSettings[] {
@@ -187,28 +187,28 @@ const CreateProjectPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate('/dashboard')}
-            className="mb-4"
+            className="mb-4 text-sm sm:text-base"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
             Back to Dashboard
           </Button>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Create New Project
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Set up your AI-powered cold email campaign in just a few steps
           </p>
         </div>
 
         {/* Step Indicator */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8 overflow-x-auto">
           <StepIndicator
             steps={steps}
             currentStep={currentStep}

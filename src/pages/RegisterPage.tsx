@@ -83,12 +83,12 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 fade-in-up">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 py-8 fade-in-up">
       <div className="w-full max-w-md">
-        <Card className="p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join thousands of professionals using PERSONALIZED-AI</p>
+        <Card className="p-6 sm:p-8">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Create Account</h1>
+            <p className="text-sm sm:text-base text-gray-600">Join thousands of professionals using PERSONALIZED-AI</p>
           </div>
 
           {errors.general && (
@@ -97,7 +97,7 @@ const RegisterPage: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div className="relative">
               <Input
                 type="text"
@@ -174,7 +174,7 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div>
-              <div className="flex items-start">
+              <div className="flex items-start space-x-3">
                 <input
                   type="checkbox"
                   checked={agreedToTerms}
@@ -184,9 +184,9 @@ const RegisterPage: React.FC = () => {
                       setErrors(prev => ({ ...prev, terms: '' }));
                     }
                   }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1 flex-shrink-0"
                 />
-                <label className="ml-2 text-sm text-gray-600">
+                <label className="text-sm text-gray-600 leading-relaxed">
                   I agree to the{' '}
                   <a href="#" className="text-blue-600 hover:text-blue-500 transition-colors">Terms of Service</a>
                   {' '}and{' '}
@@ -215,7 +215,7 @@ const RegisterPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 sm:mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
               <Link to="/login" className="text-blue-600 hover:text-blue-500 font-medium transition-colors">

@@ -124,25 +124,25 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
 
   return (
     <div className="fade-in-up">
-      <Card className="p-8">
+      <Card className="p-6 sm:p-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Project Settings</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Project Settings</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             Configure your email capacity, AI model, and targeting settings
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Email Capacity Settings - Collapsible */}
           <div className="transition-all duration-300 ease-in-out">
             <button
               type="button"
               onClick={() => setShowEmailCapacity(!showEmailCapacity)}
-              className="flex items-center space-x-2 text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
+              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
             >
-              <Calculator className="h-5 w-5" />
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Email Capacity Settings</span>
-              <ChevronRight className={`h-5 w-5 ml-auto transition-transform duration-300 ${
+              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
                 showEmailCapacity ? 'rotate-90' : ''
               }`} />
             </button>
@@ -150,8 +150,8 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
             <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
               showEmailCapacity ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
             }`}>
-              <div className="bg-gray-50 rounded-lg p-6 transform transition-transform duration-300">
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                   <Input
                     label="No. of Mailboxes"
                     type="number"
@@ -202,16 +202,16 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                       onChange={(e) => updateEmailCapacity('processValidEmails', e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
                     />
-                    <span className="text-sm text-gray-700">Process only valid emails</span>
+                    <span className="text-xs sm:text-sm text-gray-700">Process only valid emails</span>
                   </label>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                  <Button variant="outline" onClick={calculateCapacity} className="transition-all duration-200">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                  <Button variant="outline" onClick={calculateCapacity} className="w-full sm:w-auto transition-all duration-200">
                     Calculate Capacity
                   </Button>
                   {calculatedCapacity !== null && (
-                    <div className="text-sm text-gray-600 slide-in">
+                    <div className="text-xs sm:text-sm text-gray-600 slide-in">
                       Estimated capacity: <span className="font-semibold text-blue-600">{calculatedCapacity}</span> contacts
                     </div>
                   )}
@@ -222,12 +222,12 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
 
           {/* AI Model Settings - Always Visible */}
           <div className="transition-all duration-300 ease-in-out">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Key className="h-5 w-5 mr-2" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Key className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               AI Models
             </h3>
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="space-y-6">
+            <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+              <div className="space-y-4 sm:space-y-6">
                 <Select
                   label="Select AI Model"
                   options={aiModelOptions}
@@ -250,7 +250,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                       error={errors.openaiKey}
                       className="pl-10"
                     />
-                    <Key className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
+                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </div>
 
                   <div className="relative">
@@ -263,7 +263,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                       error={errors.geminiKey}
                       className="pl-10"
                     />
-                    <Key className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
+                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </div>
 
                   <div className="relative">
@@ -276,7 +276,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                       error={errors.claudeKey}
                       className="pl-10"
                     />
-                    <Key className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
+                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </div>
 
                   <div className="relative">
@@ -289,13 +289,13 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                       error={errors.ssmKey}
                       className="pl-10"
                     />
-                    <Key className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
+                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200">
-                <p className="text-sm text-blue-800">
+              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200">
+                <p className="text-xs sm:text-sm text-blue-800">
                   <strong>Note:</strong> API keys are encrypted and stored securely. You only need to provide the key for your selected AI model.
                 </p>
               </div>
@@ -307,11 +307,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
             <button
               type="button"
               onClick={() => setShowAdvancedTargeting(!showAdvancedTargeting)}
-              className="flex items-center space-x-2 text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
+              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
             >
-              <Users className="h-5 w-5" />
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Advanced Company Targeting Settings</span>
-              <ChevronRight className={`h-5 w-5 ml-auto transition-transform duration-300 ${
+              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
                 showAdvancedTargeting ? 'rotate-90' : ''
               }`} />
             </button>
@@ -319,14 +319,14 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
             <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
               showAdvancedTargeting ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
             }`}>
-              <div className="bg-gray-50 rounded-lg p-6 transform transition-transform duration-300">
-                <div className="space-y-6">
+              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
+                <div className="space-y-4 sm:space-y-6">
                   {formData.companyTargeting.map((targeting, index) => (
-                    <div key={index} className="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-md">
-                      <h4 className="font-semibold text-gray-900 mb-4 text-lg">
+                    <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200 transition-all duration-200 hover:shadow-md">
+                      <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
                         Company Size Range {index + 1}
                       </h4>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                           label="Company Size"
                           value={targeting.companySize}
@@ -367,11 +367,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-between mt-8">
-          <Button variant="outline" onClick={onPrevious} className="transition-all duration-200">
+        <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-6 sm:mt-8">
+          <Button variant="outline" onClick={onPrevious} className="w-full sm:w-auto transition-all duration-200">
             Previous
           </Button>
-          <Button onClick={handleNext} size="lg" className="transition-all duration-200">
+          <Button onClick={handleNext} size="lg" className="w-full sm:w-auto transition-all duration-200">
             Next: Payment
           </Button>
         </div>

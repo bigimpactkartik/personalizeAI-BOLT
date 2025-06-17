@@ -56,11 +56,6 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
       description: `Payment for ${formData.projectName}`,
       image: '/logo.png', // Add your logo
       order_id: `order_${Date.now()}`, // Generate order ID from backend
-      prefill: {
-        name: 'Customer',
-        email: 'customer@example.com',
-        contact: '+919999999999',
-      },
       notes: {
         project_name: formData.projectName,
         ai_model: formData.aiModel.provider,
@@ -100,13 +95,13 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   if (paymentSuccess) {
     return (
       <div className="fade-in-up">
-        <Card className="p-8 text-center">
+        <Card className="p-6 sm:p-8 text-center">
           <div className="mb-6">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
-            <p className="text-gray-600">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+            <p className="text-sm sm:text-base text-gray-600">
               Your payment has been processed successfully. Your project is being set up.
             </p>
           </div>
@@ -118,11 +113,11 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
             </div>
             <div className="flex items-center justify-between text-sm mt-2">
               <span className="text-green-800">Project:</span>
-              <span className="font-semibold text-green-900">{formData.projectName}</span>
+              <span className="font-semibold text-green-900 truncate ml-2">{formData.projectName}</span>
             </div>
           </div>
 
-          <div className="text-sm text-gray-600 mb-6">
+          <div className="text-xs sm:text-sm text-gray-600 mb-6">
             <p>You will receive a confirmation email shortly with your project details.</p>
           </div>
 
@@ -136,65 +131,65 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
   return (
     <div className="fade-in-up">
-      <Card className="p-8">
+      <Card className="p-6 sm:p-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Payment</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Complete Payment</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             Review your project details and complete the payment to start processing
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Project Summary */}
           <div className="slide-in">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Summary</h3>
-            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Project Summary</h3>
+            <div className="bg-gray-50 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
               <div className="flex justify-between">
-                <span className="text-gray-600">Project Name:</span>
-                <span className="font-medium">{formData.projectName}</span>
+                <span className="text-sm sm:text-base text-gray-600">Project Name:</span>
+                <span className="font-medium text-sm sm:text-base truncate ml-2">{formData.projectName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">AI Model:</span>
-                <span className="font-medium capitalize">{formData.aiModel.provider}</span>
+                <span className="text-sm sm:text-base text-gray-600">AI Model:</span>
+                <span className="font-medium text-sm sm:text-base capitalize">{formData.aiModel.provider}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Mailboxes:</span>
-                <span className="font-medium">{formData.emailCapacity.mailboxes}</span>
+                <span className="text-sm sm:text-base text-gray-600">Mailboxes:</span>
+                <span className="font-medium text-sm sm:text-base">{formData.emailCapacity.mailboxes}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Emails per Mailbox:</span>
-                <span className="font-medium">{formData.emailCapacity.emailsPerMailbox}</span>
+                <span className="text-sm sm:text-base text-gray-600">Emails per Mailbox:</span>
+                <span className="font-medium text-sm sm:text-base">{formData.emailCapacity.emailsPerMailbox}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Data Source:</span>
-                <span className="font-medium capitalize">{formData.dataSource}</span>
+                <span className="text-sm sm:text-base text-gray-600">Data Source:</span>
+                <span className="font-medium text-sm sm:text-base capitalize">{formData.dataSource}</span>
               </div>
             </div>
           </div>
 
           {/* Pricing */}
           <div className="slide-in">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">What's Included</h3>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">What's Included</h3>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+              <div className="mb-4 sm:mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-3xl font-bold text-gray-900">₹{price}</span>
-                  <span className="text-sm text-gray-500">one-time</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">₹{price}</span>
+                  <span className="text-xs sm:text-sm text-gray-500">one-time</span>
                 </div>
-                <p className="text-sm text-gray-600">Complete project processing and results</p>
+                <p className="text-xs sm:text-sm text-gray-600">Complete project processing and results</p>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 {features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{feature}</span>
+                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-700">{feature}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-                <Shield className="h-4 w-4" />
+              <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
+                <Shield className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span>Secure payment processing via Razorpay</span>
               </div>
 
@@ -206,12 +201,12 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
               >
                 {paymentLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                     Processing Payment...
                   </>
                 ) : (
                   <>
-                    <CreditCard className="mr-2 h-5 w-5" />
+                    <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     Pay ₹{price} with Razorpay
                   </>
                 )}
@@ -220,16 +215,16 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           </div>
         </div>
 
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg fade-in-up">
+        <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg fade-in-up">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <ArrowRight className="h-4 w-4 text-blue-600" />
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-900 mb-1">What happens next?</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
+              <h4 className="font-semibold text-blue-900 mb-1 text-sm sm:text-base">What happens next?</h4>
+              <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
                 <li>• Complete secure payment via Razorpay</li>
                 <li>• Your project will be queued for processing</li>
                 <li>• AI will analyze your leads and generate personalized emails</li>
@@ -239,24 +234,24 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-between mt-8">
-          <Button variant="outline" onClick={onPrevious} className="transition-all duration-200">
+        <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-6 sm:mt-8">
+          <Button variant="outline" onClick={onPrevious} className="w-full sm:w-auto transition-all duration-200">
             Previous
           </Button>
           <Button 
             onClick={initializeRazorpay} 
             size="lg" 
-            className="transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="w-full sm:w-auto transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             loading={paymentLoading}
           >
             {paymentLoading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                 Processing...
               </>
             ) : (
               <>
-                <CreditCard className="mr-2 h-5 w-5" />
+                <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Pay Now
               </>
             )}

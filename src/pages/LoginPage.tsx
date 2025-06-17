@@ -77,13 +77,13 @@ const LoginPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center px-4 fade-in-up transition-colors duration-300">
         <div className="w-full max-w-md">
-          <Card className="p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-2xl">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="h-8 w-8 text-white" />
+          <Card className="p-6 sm:p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-2xl">
+            <div className="text-center mb-6 sm:mb-8">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Reset Password</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">Reset Password</h1>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 px-2">
                 {forgotPasswordSent 
                   ? 'Check your email for reset instructions'
                   : 'Enter your email to receive reset instructions'
@@ -92,7 +92,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             {!forgotPasswordSent ? (
-              <form onSubmit={handleForgotPassword} className="space-y-6">
+              <form onSubmit={handleForgotPassword} className="space-y-4 sm:space-y-6">
                 <div className="relative">
                   <Input
                     type="email"
@@ -112,23 +112,23 @@ const LoginPage: React.FC = () => {
               </form>
             ) : (
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400" />
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  We've sent password reset instructions to <strong className="text-gray-900 dark:text-white">{forgotPasswordEmail}</strong>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 px-2">
+                  We've sent password reset instructions to <strong className="text-gray-900 dark:text-white break-all">{forgotPasswordEmail}</strong>
                 </p>
               </div>
             )}
 
-            <div className="mt-6 text-center">
+            <div className="mt-4 sm:mt-6 text-center">
               <button
                 onClick={() => {
                   setShowForgotPassword(false);
                   setForgotPasswordSent(false);
                   setForgotPasswordEmail('');
                 }}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors duration-300"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors duration-300 text-sm sm:text-base"
               >
                 Back to Login
               </button>
@@ -146,16 +146,16 @@ const LoginPage: React.FC = () => {
         <Card className="p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Settings</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Settings</h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-lg"
               >
                 ×
               </button>
             </div>
             <div className="flex items-center space-x-3">
-              <span className="text-sm text-gray-700 dark:text-gray-300">Theme</span>
+              <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Theme</span>
               <ThemeToggle size="sm" />
             </div>
           </div>
@@ -165,19 +165,19 @@ const LoginPage: React.FC = () => {
       {/* Settings Button */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="fixed top-4 right-4 z-40 w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+        className="fixed top-4 right-4 z-40 w-10 h-10 sm:w-12 sm:h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
       >
-        <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+        <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
       </button>
 
       <div className="w-full max-w-md">
-        <Card className="p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-2xl">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="h-8 w-8 text-white" />
+        <Card className="p-6 sm:p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-2xl">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <Lock className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome Back</h1>
-            <p className="text-gray-600 dark:text-gray-400">Sign in to your account to continue</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome Back</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Sign in to your account to continue</p>
           </div>
 
           {errors.general && (
@@ -186,7 +186,7 @@ const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div className="relative">
               <Input
                 type="email"
@@ -224,7 +224,7 @@ const LoginPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <label className="flex items-center">
                 <input
                   type="checkbox"
@@ -235,7 +235,7 @@ const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-300"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-300 text-left sm:text-right"
               >
                 Forgot password?
               </button>
@@ -258,7 +258,7 @@ const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 sm:mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Don't have an account?{' '}
               <Link to="/register" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors duration-300">
