@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Shield, CheckCircle, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CreditCard, Shield, CheckCircle, ArrowRight, Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
 import Card from '../UI/Card';
@@ -24,11 +24,27 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // Ensure page scrolls to top when component mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  // Auto-reload after payment failure
+  useEffect(() => {
+    if (paymentError && !isRetrying) {
+      const timer = setTimeout(() => {
+        setIsRetrying(true);
+        setPaymentError(null);
+        setPaymentLoading(false);
+        // Scroll to top to show the retry interface
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 3000); // Auto-reload after 3 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [paymentError, isRetrying]);
 
   const calculatePrice = () => {
     const basePrice = 299;
@@ -53,13 +69,17 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
   const handlePaymentFailure = (error: any) => {
     setPaymentLoading(false);
-    setPaymentError(error.description || 'Payment failed. Please try again.');
+    const errorMessage = error.description || error.reason || 'Payment failed. Please try again.';
+    setPaymentError(errorMessage);
+    setIsRetrying(false);
+    
     // Scroll to top to show error message
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleRetryPayment = () => {
     setPaymentError(null);
+    setIsRetrying(false);
     initializeRazorpay();
   };
 
@@ -67,12 +87,14 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
     setPaymentError(null);
     setPaymentLoading(false);
     setPaymentSuccess(false);
+    setIsRetrying(false);
     onPrevious();
   };
 
   const initializeRazorpay = () => {
     setPaymentLoading(true);
     setPaymentError(null);
+    setIsRetrying(false);
 
     const options = {
       key: 'rzp_test_1234567890', // Replace with your Razorpay key
@@ -103,14 +125,16 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
       },
       modal: {
         ondismiss: function () {
-          // User closed the payment modal
+          // User closed the payment modal without completing payment
           setPaymentLoading(false);
+          // Don't show error, just reset state
         },
       },
     };
 
     const rzp = new window.Razorpay(options);
     
+    // Handle payment failure without showing popup
     rzp.on('payment.failed', function (response: any) {
       handlePaymentFailure(response.error);
     });
@@ -158,21 +182,25 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   return (
     <div className="fade-in-up">
       <Card className="p-6 sm:p-8">
-        {/* Payment Error Alert */}
-        {paymentError && (
+        {/* Payment Error Alert with Auto-Reload */}
+        {paymentError && !isRetrying && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg slide-in">
             <div className="flex items-start space-x-3">
               <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-red-800 mb-1">Payment Failed</h4>
-                <p className="text-sm text-red-700">{paymentError}</p>
-                <div className="mt-3 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <p className="text-sm text-red-700 mb-3">{paymentError}</p>
+                <div className="flex items-center space-x-2 text-xs text-red-600 mb-3">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  <span>Auto-reloading in 3 seconds...</span>
+                </div>
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                   <Button 
                     onClick={handleRetryPayment} 
                     size="sm" 
                     className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
                   >
-                    Try Again
+                    Try Again Now
                   </Button>
                   <Button 
                     onClick={handleGoBack} 
@@ -183,6 +211,28 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                     Go Back
                   </Button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Retry Interface */}
+        {isRetrying && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg slide-in">
+            <div className="flex items-start space-x-3">
+              <RefreshCw className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-blue-800 mb-1">Ready to Retry Payment</h4>
+                <p className="text-sm text-blue-700 mb-3">
+                  The page has been refreshed. You can now try making the payment again.
+                </p>
+                <Button 
+                  onClick={handleRetryPayment} 
+                  size="sm" 
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                >
+                  Make Payment
+                </Button>
               </div>
             </div>
           </div>
