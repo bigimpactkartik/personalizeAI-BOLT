@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CreditCard, Shield, CheckCircle, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CreditCard, Shield, CheckCircle, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
 import Card from '../UI/Card';
@@ -23,6 +23,12 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 }) => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  // Ensure page scrolls to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const calculatePrice = () => {
     const basePrice = 299;
@@ -45,8 +51,28 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
     'Campaign performance insights'
   ];
 
+  const handlePaymentFailure = (error: any) => {
+    setPaymentLoading(false);
+    setPaymentError(error.description || 'Payment failed. Please try again.');
+    // Scroll to top to show error message
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRetryPayment = () => {
+    setPaymentError(null);
+    initializeRazorpay();
+  };
+
+  const handleGoBack = () => {
+    setPaymentError(null);
+    setPaymentLoading(false);
+    setPaymentSuccess(false);
+    onPrevious();
+  };
+
   const initializeRazorpay = () => {
     setPaymentLoading(true);
+    setPaymentError(null);
 
     const options = {
       key: 'rzp_test_1234567890', // Replace with your Razorpay key
@@ -77,6 +103,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
       },
       modal: {
         ondismiss: function () {
+          // User closed the payment modal
           setPaymentLoading(false);
         },
       },
@@ -85,8 +112,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
     const rzp = new window.Razorpay(options);
     
     rzp.on('payment.failed', function (response: any) {
-      setPaymentLoading(false);
-      alert('Payment failed: ' + response.error.description);
+      handlePaymentFailure(response.error);
     });
 
     rzp.open();
@@ -132,6 +158,36 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   return (
     <div className="fade-in-up">
       <Card className="p-6 sm:p-8">
+        {/* Payment Error Alert */}
+        {paymentError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg slide-in">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-red-800 mb-1">Payment Failed</h4>
+                <p className="text-sm text-red-700">{paymentError}</p>
+                <div className="mt-3 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                  <Button 
+                    onClick={handleRetryPayment} 
+                    size="sm" 
+                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
+                  >
+                    Try Again
+                  </Button>
+                  <Button 
+                    onClick={handleGoBack} 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50"
+                  >
+                    Go Back
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Complete Payment</h2>
           <p className="text-sm sm:text-base text-gray-600">
@@ -198,6 +254,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                 className="w-full transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 size="lg"
                 loading={paymentLoading}
+                disabled={paymentLoading}
               >
                 {paymentLoading ? (
                   <>
@@ -235,7 +292,12 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-6 sm:mt-8">
-          <Button variant="outline" onClick={onPrevious} className="w-full sm:w-auto transition-all duration-200">
+          <Button 
+            variant="outline" 
+            onClick={handleGoBack} 
+            className="w-full sm:w-auto transition-all duration-200"
+            disabled={paymentLoading}
+          >
             Previous
           </Button>
           <Button 
@@ -243,6 +305,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
             size="lg" 
             className="w-full sm:w-auto transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             loading={paymentLoading}
+            disabled={paymentLoading}
           >
             {paymentLoading ? (
               <>

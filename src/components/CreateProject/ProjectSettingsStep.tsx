@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Calculator, Key, Users } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
@@ -23,6 +23,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
   const [showAdvancedTargeting, setShowAdvancedTargeting] = useState(false);
   const [calculatedCapacity, setCalculatedCapacity] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Ensure page scrolls to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const aiModelOptions = [
     { value: 'openai-gpt4', label: 'OpenAI GPT-4', description: 'Most versatile and creative' },
@@ -90,6 +95,10 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
     if (validate()) {
       onNext();
     }
+  };
+
+  const handlePrevious = () => {
+    onPrevious();
   };
 
   const updateEmailCapacity = (field: string, value: number | boolean) => {
@@ -368,7 +377,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-6 sm:mt-8">
-          <Button variant="outline" onClick={onPrevious} className="w-full sm:w-auto transition-all duration-200">
+          <Button variant="outline" onClick={handlePrevious} className="w-full sm:w-auto transition-all duration-200">
             Previous
           </Button>
           <Button onClick={handleNext} size="lg" className="w-full sm:w-auto transition-all duration-200">

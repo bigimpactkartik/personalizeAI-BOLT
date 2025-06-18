@@ -252,3 +252,26 @@ textarea:focus {
     }
   }
 }
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure smooth scrolling works on all browsers */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Fix for iOS scroll bounce */
+body {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent scroll issues during navigation */
+.scroll-lock {
+  overflow: hidden;
+  height: 100vh;
+}

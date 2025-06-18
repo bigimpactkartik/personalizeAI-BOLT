@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
@@ -16,6 +16,11 @@ const ProjectDetailsStep: React.FC<ProjectDetailsStepProps> = ({
   onNext
 }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Ensure page scrolls to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};

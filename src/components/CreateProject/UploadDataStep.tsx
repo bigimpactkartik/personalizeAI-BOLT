@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileSpreadsheet, Link, CheckCircle, AlertCircle } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
@@ -19,6 +19,11 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
   onPrevious
 }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Ensure page scrolls to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const requiredColumns = [
     { name: 'Email', required: true },
@@ -49,6 +54,10 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
     if (validate()) {
       onNext();
     }
+  };
+
+  const handlePrevious = () => {
+    onPrevious();
   };
 
   const handleDataSourceChange = (source: 'excel' | 'googlesheet') => {
@@ -210,7 +219,7 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
-          <Button variant="outline" onClick={onPrevious} className="w-full sm:w-auto transition-all duration-200">
+          <Button variant="outline" onClick={handlePrevious} className="w-full sm:w-auto transition-all duration-200">
             Previous
           </Button>
           <Button onClick={handleNext} size="lg" className="w-full sm:w-auto transition-all duration-200">
