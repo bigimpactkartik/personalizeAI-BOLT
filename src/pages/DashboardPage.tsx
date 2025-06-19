@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../contexts/ProjectContext';
+import { supabase } from '../lib/supabase';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import ProgressBar from '../components/UI/ProgressBar';
@@ -10,6 +11,37 @@ import ProgressBar from '../components/UI/ProgressBar';
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { projects, loading } = useProjects();
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user profile:', error);
+        } else {
+          setUserProfile(data);
+        }
+      } catch (error) {
+        console.error('Error in fetchUserProfile:', error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -58,7 +90,20 @@ const DashboardPage: React.FC = () => {
     });
   };
 
-  if (loading) {
+  const getUserDisplayName = () => {
+    if (userProfile?.full_name) {
+      return userProfile.full_name;
+    }
+    if (user?.user_metadata?.name) {
+      return user.user_metadata.name;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'User';
+  };
+
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -75,7 +120,7 @@ const DashboardPage: React.FC = () => {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.user_metadata?.name || user?.email?.split('@')[0]}!
+            Welcome back, {getUserDisplayName()}!
           </h1>
           <p className="text-sm sm:text-base text-gray-600">
             Manage your cold email campaigns and track their performance
