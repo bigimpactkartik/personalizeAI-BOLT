@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, FileText, Upload, Settings, CreditCard } from 'lucide-react';
+import { ArrowLeft, FileText, Upload, Settings, CreditCard } from 'lucide-react';
 import { useProjects } from '../contexts/ProjectContext';
 import { ProjectFormData, CompanyTargetingSettings } from '../types';
 import Button from '../components/UI/Button';
-import Card from '../components/UI/Card';
 import StepIndicator from '../components/UI/StepIndicator';
 import ProjectDetailsStep from '../components/CreateProject/ProjectDetailsStep';
 import UploadDataStep from '../components/CreateProject/UploadDataStep';
@@ -28,7 +27,7 @@ const CreateProjectPage: React.FC = () => {
       processValidEmails: true
     },
     aiModel: {
-      provider: 'openai'
+      provider: 'openai-gpt4'
     },
     companyTargeting: getDefaultCompanyTargeting()
   });
@@ -38,13 +37,6 @@ const CreateProjectPage: React.FC = () => {
     'Upload Data',
     'Settings',
     'Payment'
-  ];
-
-  const stepIcons = [
-    <FileText className="h-4 w-4 sm:h-5 sm:w-5" />,
-    <Upload className="h-4 w-4 sm:h-5 sm:w-5" />,
-    <Settings className="h-4 w-4 sm:h-5 sm:w-5" />,
-    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
   ];
 
   function getDefaultCompanyTargeting(): CompanyTargetingSettings[] {
@@ -131,17 +123,17 @@ const CreateProjectPage: React.FC = () => {
     }
   };
 
-  const handleFinish = () => {
-    // Create the project
-    addProject({
-      name: formData.projectName,
-      description: formData.description,
-      status: 'pending',
-      progress: 0
-    });
-    
-    // Navigate back to dashboard
-    navigate('/dashboard');
+  const handleFinish = async () => {
+    try {
+      // Create the project in Supabase
+      await addProject(formData);
+      
+      // Navigate back to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error creating project:', error);
+      // Handle error (could show a toast notification)
+    }
   };
 
   const renderCurrentStep = () => {

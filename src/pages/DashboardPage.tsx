@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../contexts/ProjectContext';
 import Button from '../components/UI/Button';
@@ -9,7 +9,7 @@ import ProgressBar from '../components/UI/ProgressBar';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { projects } = useProjects();
+  const { projects, loading } = useProjects();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -50,13 +50,32 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading your projects...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.name}!
+            Welcome back, {user?.user_metadata?.name || user?.email?.split('@')[0]}!
           </h1>
           <p className="text-sm sm:text-base text-gray-600">
             Manage your cold email campaigns and track their performance
@@ -124,7 +143,7 @@ const DashboardPage: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-                          {project.name}
+                          {project.project_name}
                         </h3>
                         <div className="flex items-center space-x-1 flex-shrink-0">
                           {getStatusIcon(project.status)}
@@ -137,7 +156,8 @@ const DashboardPage: React.FC = () => {
                       <p className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-2">{project.description}</p>
                       
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
-                        <span>Created: {project.createdAt}</span>
+                        <span>Created: {formatDate(project.created_at)}</span>
+                        <span>AI Model: {project.ai_model_provider}</span>
                         {project.status === 'processing' && (
                           <div className="flex items-center space-x-2">
                             <span>Progress:</span>
@@ -155,7 +175,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
-                      {project.status === 'completed' && project.resultFile && (
+                      {project.status === 'completed' && project.result_file_path && (
                         <Button variant="outline" size="sm" className="w-full sm:w-auto">
                           <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           Download

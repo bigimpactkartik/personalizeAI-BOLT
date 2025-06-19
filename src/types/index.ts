@@ -1,17 +1,13 @@
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+import { User, Session } from '@supabase/supabase-js';
 
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  createdAt: string;
-  resultFile?: string;
+export interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  login: (email: string, password: string) => Promise<any>;
+  register: (name: string, email: string, password: string) => Promise<any>;
+  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  loading: boolean;
 }
 
 export interface ProjectFormData {
@@ -51,12 +47,4 @@ export interface CompanyTargetingSettings {
   exclusionRoles: string;
   targetDepartments: string;
   exclusionDepartments: string;
-}
-
-export interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
 }

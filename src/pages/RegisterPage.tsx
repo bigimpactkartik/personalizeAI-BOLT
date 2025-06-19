@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/UI/Button';
 import Input from '../components/UI/Input';
@@ -64,11 +64,16 @@ const RegisterPage: React.FC = () => {
     if (!validateForm()) return;
 
     setLoading(true);
+    setErrors({});
+    
     try {
       await register(formData.name, formData.email, formData.password);
       navigate('/dashboard');
-    } catch (error) {
-      setErrors({ general: 'Registration failed. Please try again.' });
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      setErrors({ 
+        general: error.message || 'Registration failed. Please try again.' 
+      });
     } finally {
       setLoading(false);
     }
@@ -79,6 +84,9 @@ const RegisterPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    if (errors.general) {
+      setErrors(prev => ({ ...prev, general: '' }));
     }
   };
 
@@ -92,8 +100,11 @@ const RegisterPage: React.FC = () => {
           </div>
 
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm slide-in">
-              {errors.general}
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg slide-in">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                <span className="text-red-600 text-sm">{errors.general}</span>
+              </div>
             </div>
           )}
 
@@ -203,6 +214,7 @@ const RegisterPage: React.FC = () => {
               className="w-full"
               size="lg"
               loading={loading}
+              disabled={loading}
             >
               {loading ? (
                 <>
