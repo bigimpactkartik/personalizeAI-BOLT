@@ -181,9 +181,11 @@ const DashboardPage: React.FC = () => {
                           Download
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" className="w-full sm:w-auto">
-                        View Details
-                      </Button>
+                      <Link to={`/project/${project.id}`} className="w-full sm:w-auto">
+                        <Button variant="ghost" size="sm" className="w-full sm:w-auto">
+                          View Details
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </Card>

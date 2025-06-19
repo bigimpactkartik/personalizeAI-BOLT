@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import CreateProjectPage from './pages/CreateProjectPage';
+import ProjectDetailsPage from './pages/ProjectDetailsPage';
 
 function App() {
   return (
@@ -38,6 +39,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <CreateProjectPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/project/:id"
+                    element={
+                      <ProtectedRoute>
+                        <ProjectDetailsPage />
                       </ProtectedRoute>
                     }
                   />
