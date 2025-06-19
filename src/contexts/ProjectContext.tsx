@@ -1,10 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase, Database } from '../lib/supabase';
 import { useAuth } from './AuthContext';
-import { ProjectFormData } from '../types';
-
-type Project = Database['public']['Tables']['projects']['Row'];
-type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
+import { Project, ProjectFormData } from '../types';
 
 interface ProjectContextType {
   projects: Project[];
@@ -13,7 +9,6 @@ interface ProjectContextType {
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   refreshProjects: () => Promise<void>;
-  uploadFile: (file: File, userId: string) => Promise<string>;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -30,6 +25,105 @@ interface ProjectProviderProps {
   children: ReactNode;
 }
 
+// Mock projects data
+const mockProjects: Project[] = [
+  {
+    id: '1',
+    userId: '1',
+    projectName: 'Tech Startup Outreach Q1 2024',
+    description: 'Targeting early-stage tech startups for our SaaS platform. Focus on founders and CTOs who might need our development tools.',
+    targetAudience: 'Tech startup founders, CTOs, and technical decision makers',
+    dataSource: 'excel',
+    aiModelProvider: 'openai-gpt4',
+    emailCapacity: {
+      mailboxes: 5,
+      emailsPerMailbox: 100,
+      batchDuration: 14,
+      emailsPerContact: 3,
+      processValidEmails: true
+    },
+    companyTargeting: [
+      {
+        companySize: '1-50',
+        numberOfContacts: 4,
+        primaryTargetRoles: 'CEO, Founder, CTO',
+        secondaryTargetRoles: 'VP Engineering, Head of Product',
+        exclusionRoles: 'Intern, Junior',
+        targetDepartments: 'Engineering, Product',
+        exclusionDepartments: 'HR, Finance'
+      }
+    ],
+    status: 'completed',
+    progress: 100,
+    resultFilePath: '/results/project-1-results.xlsx',
+    createdAt: '2024-01-15T10:30:00Z',
+    updatedAt: '2024-01-20T15:45:00Z'
+  },
+  {
+    id: '2',
+    userId: '1',
+    projectName: 'E-commerce Platform Outreach',
+    description: 'Reaching out to e-commerce businesses to promote our analytics and optimization tools.',
+    targetAudience: 'E-commerce managers, digital marketing directors, and online store owners',
+    dataSource: 'googlesheet',
+    googleSheetLink: 'https://docs.google.com/spreadsheets/d/example',
+    aiModelProvider: 'claude-sonnet',
+    emailCapacity: {
+      mailboxes: 3,
+      emailsPerMailbox: 75,
+      batchDuration: 10,
+      emailsPerContact: 2,
+      processValidEmails: true
+    },
+    companyTargeting: [
+      {
+        companySize: '10-100',
+        numberOfContacts: 3,
+        primaryTargetRoles: 'Marketing Director, E-commerce Manager',
+        secondaryTargetRoles: 'Digital Marketing Specialist, Store Manager',
+        exclusionRoles: 'Assistant, Coordinator',
+        targetDepartments: 'Marketing, E-commerce',
+        exclusionDepartments: 'Legal, Accounting'
+      }
+    ],
+    status: 'processing',
+    progress: 65,
+    createdAt: '2024-01-22T09:15:00Z',
+    updatedAt: '2024-01-25T11:20:00Z'
+  },
+  {
+    id: '3',
+    userId: '1',
+    projectName: 'Healthcare SaaS Outreach',
+    description: 'Targeting healthcare organizations for our patient management software solution.',
+    targetAudience: 'Healthcare administrators, practice managers, and medical directors',
+    dataSource: 'excel',
+    aiModelProvider: 'gemini-pro',
+    emailCapacity: {
+      mailboxes: 2,
+      emailsPerMailbox: 50,
+      batchDuration: 7,
+      emailsPerContact: 1,
+      processValidEmails: true
+    },
+    companyTargeting: [
+      {
+        companySize: '20-200',
+        numberOfContacts: 5,
+        primaryTargetRoles: 'Practice Manager, Medical Director',
+        secondaryTargetRoles: 'Administrator, Operations Manager',
+        exclusionRoles: 'Nurse, Technician',
+        targetDepartments: 'Administration, Operations',
+        exclusionDepartments: 'Clinical, Nursing'
+      }
+    ],
+    status: 'pending',
+    progress: 0,
+    createdAt: '2024-01-28T14:00:00Z',
+    updatedAt: '2024-01-28T14:00:00Z'
+  }
+];
+
 export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,24 +136,24 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
       return;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (error) {
-        throw error;
+    // Get projects from localStorage or use mock data
+    const storedProjects = localStorage.getItem(`projects_${user.id}`);
+    if (storedProjects) {
+      try {
+        setProjects(JSON.parse(storedProjects));
+      } catch (error) {
+        console.error('Error parsing stored projects:', error);
+        setProjects(mockProjects.filter(p => p.userId === user.id));
       }
-
-      setProjects(data || []);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      setProjects([]);
-    } finally {
-      setLoading(false);
+    } else {
+      // Use mock data for demo
+      setProjects(mockProjects.filter(p => p.userId === user.id));
     }
+    
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -71,19 +165,10 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     }
   }, [user, isAuthenticated]);
 
-  const uploadFile = async (file: File, userId: string): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/${Date.now()}.${fileExt}`;
-
-    const { data, error } = await supabase.storage
-      .from('project-files')
-      .upload(fileName, file);
-
-    if (error) {
-      throw error;
+  const saveProjectsToStorage = (updatedProjects: Project[]) => {
+    if (user) {
+      localStorage.setItem(`projects_${user.id}`, JSON.stringify(updatedProjects));
     }
-
-    return data.path;
   };
 
   const addProject = async (projectData: ProjectFormData): Promise<Project> => {
@@ -91,70 +176,55 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
       throw new Error('User not authenticated');
     }
 
-    let excelFilePath: string | null = null;
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Upload file if it exists
-    if (projectData.excelFile) {
-      excelFilePath = await uploadFile(projectData.excelFile, user.id);
-    }
-
-    const projectInsert: ProjectInsert = {
-      user_id: user.id,
-      project_name: projectData.projectName,
+    const newProject: Project = {
+      id: Date.now().toString(),
+      userId: user.id,
+      projectName: projectData.projectName,
       description: projectData.description,
-      target_audience: projectData.targetAudience,
-      data_source: projectData.dataSource,
-      google_sheet_link: projectData.googleSheetLink || null,
-      excel_file_path: excelFilePath,
-      ai_model_provider: projectData.aiModel.provider,
-      email_capacity: projectData.emailCapacity,
-      company_targeting: projectData.companyTargeting,
+      targetAudience: projectData.targetAudience,
+      dataSource: projectData.dataSource,
+      googleSheetLink: projectData.googleSheetLink,
+      excelFile: projectData.excelFile,
+      aiModelProvider: projectData.aiModel.provider,
+      emailCapacity: projectData.emailCapacity,
+      companyTargeting: projectData.companyTargeting,
       status: 'pending',
       progress: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
-    const { data, error } = await supabase
-      .from('projects')
-      .insert(projectInsert)
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    setProjects(prev => [data, ...prev]);
-    return data;
+    const updatedProjects = [newProject, ...projects];
+    setProjects(updatedProjects);
+    saveProjectsToStorage(updatedProjects);
+    
+    return newProject;
   };
 
   const updateProject = async (id: string, updates: Partial<Project>) => {
-    const { data, error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (error) {
-      throw error;
-    }
-
-    setProjects(prev => prev.map(project => 
-      project.id === id ? data : project
-    ));
+    const updatedProjects = projects.map(project => 
+      project.id === id 
+        ? { ...project, ...updates, updatedAt: new Date().toISOString() }
+        : project
+    );
+    
+    setProjects(updatedProjects);
+    saveProjectsToStorage(updatedProjects);
   };
 
   const deleteProject = async (id: string) => {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id);
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (error) {
-      throw error;
-    }
-
-    setProjects(prev => prev.filter(project => project.id !== id));
+    const updatedProjects = projects.filter(project => project.id !== id);
+    setProjects(updatedProjects);
+    saveProjectsToStorage(updatedProjects);
   };
 
   const refreshProjects = async () => {
@@ -167,8 +237,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     addProject,
     updateProject,
     deleteProject,
-    refreshProjects,
-    uploadFile
+    refreshProjects
   };
 
   return (

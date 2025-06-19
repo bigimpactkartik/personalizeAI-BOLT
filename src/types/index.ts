@@ -1,13 +1,42 @@
-import { User, Session } from '@supabase/supabase-js';
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
+}
 
 export interface AuthContextType {
   user: User | null;
-  session: Session | null;
-  login: (email: string, password: string) => Promise<any>;
-  register: (name: string, email: string, password: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   loading: boolean;
+}
+
+export interface Project {
+  id: string;
+  userId: string;
+  projectName: string;
+  description: string;
+  targetAudience: string;
+  dataSource: 'excel' | 'googlesheet';
+  googleSheetLink?: string;
+  excelFile?: File;
+  aiModelProvider: string;
+  emailCapacity: {
+    mailboxes: number;
+    emailsPerMailbox: number;
+    batchDuration: number;
+    emailsPerContact: number;
+    processValidEmails: boolean;
+  };
+  companyTargeting: CompanyTargetingSettings[];
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  resultFilePath?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProjectFormData {

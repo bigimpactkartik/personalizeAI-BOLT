@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Brain, LogOut, User, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState } from 'react';
 
 const Header: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -23,8 +22,8 @@ const Header: React.FC = () => {
   };
 
   const getUserDisplayName = () => {
-    if (user?.user_metadata?.name) {
-      return user.user_metadata.name;
+    if (user?.name) {
+      return user.name;
     }
     if (user?.email) {
       return user.email.split('@')[0];

@@ -75,7 +75,7 @@ const DashboardPage: React.FC = () => {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.user_metadata?.name || user?.email?.split('@')[0]}!
+            Welcome back, {user?.name || user?.email?.split('@')[0]}!
           </h1>
           <p className="text-sm sm:text-base text-gray-600">
             Manage your cold email campaigns and track their performance
@@ -143,7 +143,7 @@ const DashboardPage: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-                          {project.project_name}
+                          {project.projectName}
                         </h3>
                         <div className="flex items-center space-x-1 flex-shrink-0">
                           {getStatusIcon(project.status)}
@@ -156,8 +156,8 @@ const DashboardPage: React.FC = () => {
                       <p className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-2">{project.description}</p>
                       
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
-                        <span>Created: {formatDate(project.created_at)}</span>
-                        <span>AI Model: {project.ai_model_provider}</span>
+                        <span>Created: {formatDate(project.createdAt)}</span>
+                        <span>AI Model: {project.aiModelProvider}</span>
                         {project.status === 'processing' && (
                           <div className="flex items-center space-x-2">
                             <span>Progress:</span>
@@ -175,7 +175,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
-                      {project.status === 'completed' && project.result_file_path && (
+                      {project.status === 'completed' && project.resultFilePath && (
                         <Button variant="outline" size="sm" className="w-full sm:w-auto">
                           <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           Download
