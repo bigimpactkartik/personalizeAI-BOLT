@@ -53,8 +53,21 @@ const LoginPage: React.FC = () => {
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
+      
+      let errorMessage = 'Invalid email or password. Please try again.';
+      
+      if (error.message?.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and confirm your account before signing in.';
+      } else if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error.message?.includes('Too many requests')) {
+        errorMessage = 'Too many login attempts. Please wait a moment and try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setErrors({ 
-        general: error.message || 'Invalid email or password. Please try again.' 
+        general: errorMessage
       });
     } finally {
       setLoading(false);

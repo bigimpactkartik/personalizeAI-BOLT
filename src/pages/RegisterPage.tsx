@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/UI/Button';
 import Input from '../components/UI/Input';
@@ -19,6 +19,7 @@ const RegisterPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -26,9 +27,9 @@ const RegisterPage: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name) {
+    if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
-    } else if (formData.name.length < 2) {
+    } else if (formData.name.trim().length < 2) {
       newErrors.name = 'Name must be at least 2 characters';
     }
 
@@ -67,13 +68,31 @@ const RegisterPage: React.FC = () => {
     setErrors({});
     
     try {
-      await register(formData.name, formData.email, formData.password);
-      navigate('/dashboard');
+      const result = await register(formData.name.trim(), formData.email, formData.password);
+      
+      // Check if email confirmation is required
+      if (result.user && !result.session) {
+        setRegistrationSuccess(true);
+      } else {
+        // User is automatically signed in
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       console.error('Registration error:', error);
-      setErrors({ 
-        general: error.message || 'Registration failed. Please try again.' 
-      });
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.message?.includes('already registered')) {
+        errorMessage = 'This email is already registered. Please try logging in instead.';
+      } else if (error.message?.includes('Password')) {
+        errorMessage = 'Password is too weak. Please choose a stronger password.';
+      } else if (error.message?.includes('email')) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setErrors({ general: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -89,6 +108,29 @@ const RegisterPage: React.FC = () => {
       setErrors(prev => ({ ...prev, general: '' }));
     }
   };
+
+  if (registrationSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 py-8 fade-in-up">
+        <div className="w-full max-w-md">
+          <Card className="p-6 sm:p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h1>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">
+              Please check your email to confirm your account before signing in.
+            </p>
+            <Link to="/login">
+              <Button className="w-full">
+                Go to Login
+              </Button>
+            </Link>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 py-8 fade-in-up">
