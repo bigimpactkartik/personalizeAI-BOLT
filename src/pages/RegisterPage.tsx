@@ -20,6 +20,7 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -33,9 +34,9 @@ const RegisterPage: React.FC = () => {
       newErrors.name = 'Name must be at least 2 characters';
     }
 
-    if (!formData.email) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(formData.email.trim())) {
       newErrors.email = 'Please enter a valid email';
     }
 
@@ -68,26 +69,39 @@ const RegisterPage: React.FC = () => {
     setErrors({});
     
     try {
-      const result = await register(formData.name.trim(), formData.email, formData.password);
+      console.log('Starting registration process...');
+      const result = await register(formData.name.trim(), formData.email.trim(), formData.password);
+      
+      console.log('Registration result:', result);
       
       // Check if email confirmation is required
       if (result.user && !result.session) {
+        console.log('Email confirmation required');
+        setEmailConfirmationRequired(true);
         setRegistrationSuccess(true);
+      } else if (result.user && result.session) {
+        console.log('User automatically signed in');
+        setRegistrationSuccess(true);
+        // Navigate to dashboard after a short delay
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
       } else {
-        // User is automatically signed in
-        navigate('/dashboard');
+        throw new Error('Registration failed - unexpected response');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
       
       let errorMessage = 'Registration failed. Please try again.';
       
-      if (error.message?.includes('already registered')) {
+      if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
         errorMessage = 'This email is already registered. Please try logging in instead.';
-      } else if (error.message?.includes('Password')) {
-        errorMessage = 'Password is too weak. Please choose a stronger password.';
+      } else if (error.message?.includes('Password should be at least')) {
+        errorMessage = 'Password is too weak. Please choose a stronger password with at least 8 characters.';
       } else if (error.message?.includes('email')) {
         errorMessage = 'Please enter a valid email address.';
+      } else if (error.message?.includes('weak password')) {
+        errorMessage = 'Password is too weak. Please include uppercase, lowercase, numbers, and special characters.';
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -118,14 +132,27 @@ const RegisterPage: React.FC = () => {
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h1>
-            <p className="text-sm sm:text-base text-gray-600 mb-6">
-              Please check your email to confirm your account before signing in.
-            </p>
-            <Link to="/login">
-              <Button className="w-full">
-                Go to Login
-              </Button>
-            </Link>
+            {emailConfirmationRequired ? (
+              <>
+                <p className="text-sm sm:text-base text-gray-600 mb-6">
+                  Please check your email to confirm your account before signing in.
+                </p>
+                <Link to="/login">
+                  <Button className="w-full">
+                    Go to Login
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-sm sm:text-base text-gray-600 mb-6">
+                  Your account has been created successfully. Redirecting to dashboard...
+                </p>
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                </div>
+              </>
+            )}
           </Card>
         </div>
       </div>

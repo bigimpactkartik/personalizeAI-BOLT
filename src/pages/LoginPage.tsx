@@ -26,9 +26,9 @@ const LoginPage: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.email) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(formData.email.trim())) {
       newErrors.email = 'Please enter a valid email';
     }
 
@@ -49,7 +49,9 @@ const LoginPage: React.FC = () => {
     setErrors({});
     
     try {
-      await login(formData.email, formData.password);
+      console.log('Attempting login...');
+      const result = await login(formData.email.trim(), formData.password);
+      console.log('Login successful, navigating to dashboard');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -62,6 +64,10 @@ const LoginPage: React.FC = () => {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
       } else if (error.message?.includes('Too many requests')) {
         errorMessage = 'Too many login attempts. Please wait a moment and try again.';
+      } else if (error.message?.includes('Email link is invalid')) {
+        errorMessage = 'Your session has expired. Please try logging in again.';
+      } else if (error.message?.includes('signup disabled')) {
+        errorMessage = 'New signups are currently disabled. Please contact support.';
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -76,7 +82,7 @@ const LoginPage: React.FC = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotPasswordEmail) return;
+    if (!forgotPasswordEmail.trim()) return;
     
     // Simulate sending reset email
     await new Promise(resolve => setTimeout(resolve, 1000));

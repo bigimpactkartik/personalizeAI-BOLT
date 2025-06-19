@@ -98,33 +98,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (email: string, password: string) => {
+    console.log('Attempting login for:', email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
 
     if (error) {
+      console.error('Login error:', error);
       throw error;
     }
 
+    if (!data.user) {
+      throw new Error('Login failed - no user returned');
+    }
+
+    console.log('Login successful for:', data.user.email);
     return data;
   };
 
   const register = async (name: string, email: string, password: string) => {
+    console.log('Attempting registration for:', email);
+    
     // Sign up with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         data: {
-          name: name,
+          name: name.trim(),
         },
       },
     });
 
     if (error) {
+      console.error('Registration error:', error);
       throw error;
     }
+
+    if (!data.user) {
+      throw new Error('Registration failed - no user returned');
+    }
+
+    console.log('Registration successful for:', data.user.email);
+    console.log('User needs email confirmation:', !data.session);
 
     // If user is immediately available (auto-confirm enabled), create profile
     if (data.user && data.session) {
@@ -134,7 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           .insert({
             id: data.user.id,
             email: data.user.email || '',
-            full_name: name
+            full_name: name.trim()
           });
 
         if (profileError) {
@@ -152,10 +170,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async () => {
+    console.log('Logging out user');
     const { error } = await supabase.auth.signOut();
     if (error) {
+      console.error('Logout error:', error);
       throw error;
     }
+    console.log('Logout successful');
   };
 
   const value: AuthContextType = {
