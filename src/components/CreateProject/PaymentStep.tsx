@@ -10,41 +10,17 @@ interface PaymentStepProps {
   onPrevious: () => void;
 }
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 const PaymentStep: React.FC<PaymentStepProps> = ({
   formData,
   onFinish,
   onPrevious
 }) => {
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [isRetrying, setIsRetrying] = useState(false);
 
   // Ensure page scrolls to top when component mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  // Auto-reload after payment failure
-  useEffect(() => {
-    if (paymentError && !isRetrying) {
-      const timer = setTimeout(() => {
-        setIsRetrying(true);
-        setPaymentError(null);
-        setPaymentLoading(false);
-        // Scroll to top to show the retry interface
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 3000); // Auto-reload after 3 seconds
-
-      return () => clearTimeout(timer);
-    }
-  }, [paymentError, isRetrying]);
 
   const calculatePrice = () => {
     const basePrice = 299;
@@ -56,177 +32,23 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
   const price = calculatePrice();
 
-  const handlePaymentFailure = (error: any) => {
-    setPaymentLoading(false);
-    const errorMessage = error.description || error.reason || 'Payment failed. Please try again.';
-    setPaymentError(errorMessage);
-    setIsRetrying(false);
-    
-    // Scroll to top to show error message
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleRetryPayment = () => {
-    setPaymentError(null);
-    setIsRetrying(false);
-    initializeRazorpay();
-  };
-
   const handleGoBack = () => {
-    setPaymentError(null);
-    setPaymentLoading(false);
-    setPaymentSuccess(false);
-    setIsRetrying(false);
     onPrevious();
   };
 
-  const initializeRazorpay = () => {
+  const handleProceedToPayment = () => {
     setPaymentLoading(true);
-    setPaymentError(null);
-    setIsRetrying(false);
-
-    const options = {
-      key: 'rzp_test_1234567890', // Replace with your Razorpay key
-      amount: price * 100, // Amount in paise
-      currency: 'INR',
-      name: 'PERSONALIZED-AI',
-      description: `Payment for ${formData.projectName}`,
-      image: '/logo.png', // Add your logo
-      order_id: `order_${Date.now()}`, // Generate order ID from backend
-      notes: {
-        project_name: formData.projectName,
-        ai_model: formData.aiModel.provider,
-        mailboxes: formData.emailCapacity.mailboxes.toString(),
-      },
-      theme: {
-        color: '#2563eb',
-      },
-      handler: function (response: any) {
-        // Payment successful
-        console.log('Payment successful:', response);
-        setPaymentLoading(false);
-        setPaymentSuccess(true);
-        
-        // Simulate API call to verify payment
-        setTimeout(() => {
-          onFinish();
-        }, 2000);
-      },
-      modal: {
-        ondismiss: function () {
-          // User closed the payment modal without completing payment
-          setPaymentLoading(false);
-          // Don't show error, just reset state
-        },
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
     
-    // Handle payment failure without showing popup
-    rzp.on('payment.failed', function (response: any) {
-      handlePaymentFailure(response.error);
-    });
-
-    rzp.open();
+    // Simulate processing time
+    setTimeout(() => {
+      setPaymentLoading(false);
+      onFinish();
+    }, 1500);
   };
-
-  if (paymentSuccess) {
-    return (
-      <div className="fade-in-up">
-        <Card className="p-6 sm:p-8 text-center">
-          <div className="mb-6">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
-            <p className="text-sm sm:text-base text-gray-600">
-              Your payment has been processed successfully. Your project is being set up.
-            </p>
-          </div>
-
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-green-800">Amount Paid:</span>
-              <span className="font-semibold text-green-900">₹{price}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm mt-2">
-              <span className="text-green-800">Project:</span>
-              <span className="font-semibold text-green-900 truncate ml-2">{formData.projectName}</span>
-            </div>
-          </div>
-
-          <div className="text-xs sm:text-sm text-gray-600 mb-6">
-            <p>You will receive a confirmation email shortly with your project details.</p>
-          </div>
-
-          <Button onClick={onFinish} size="lg" className="w-full">
-            Go to Dashboard
-          </Button>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="fade-in-up">
       <Card className="p-6 sm:p-8">
-        {/* Payment Error Alert with Auto-Reload */}
-        {paymentError && !isRetrying && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg slide-in">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-red-800 mb-1">Payment Failed</h4>
-                <p className="text-sm text-red-700 mb-3">{paymentError}</p>
-                <div className="flex items-center space-x-2 text-xs text-red-600 mb-3">
-                  <RefreshCw className="h-3 w-3 animate-spin" />
-                  <span>Auto-reloading in 3 seconds...</span>
-                </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                  <Button 
-                    onClick={handleRetryPayment} 
-                    size="sm" 
-                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
-                  >
-                    Try Again Now
-                  </Button>
-                  <Button 
-                    onClick={handleGoBack} 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50"
-                  >
-                    Go Back
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Retry Interface */}
-        {isRetrying && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg slide-in">
-            <div className="flex items-start space-x-3">
-              <RefreshCw className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-blue-800 mb-1">Ready to Retry Payment</h4>
-                <p className="text-sm text-blue-700 mb-3">
-                  The page has been refreshed. You can now try making the payment again.
-                </p>
-                <Button 
-                  onClick={handleRetryPayment} 
-                  size="sm" 
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
-                >
-                  Make Payment
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Complete Payment</h2>
           <p className="text-sm sm:text-base text-gray-600">
@@ -271,18 +93,18 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
         {/* Payment Button */}
         <div className="mb-6">
           <Button
-            onClick={initializeRazorpay}
+            onClick={handleProceedToPayment}
             className="w-full transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             size="lg"
             loading={paymentLoading}
             disabled={paymentLoading}
           >
             {paymentLoading ? (
-              'Processing Payment...'
+              'Processing...'
             ) : (
               <>
                 <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Pay ₹{price} with Razorpay
+                Proceed to Payment
               </>
             )}
           </Button>
@@ -298,7 +120,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
             <div>
               <h4 className="font-semibold text-blue-900 mb-1 text-sm sm:text-base">What happens next?</h4>
               <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
-                <li>• Complete secure payment via Razorpay</li>
+                <li>• Complete secure payment</li>
                 <li>• Your project will be queued for processing</li>
                 <li>• AI will analyze your leads and generate personalized emails</li>
                 <li>• Results will be available for download within 24-48 hours</li>
