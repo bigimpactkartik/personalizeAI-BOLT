@@ -126,9 +126,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
 
-    // Ensure user profile is created (fallback in case trigger doesn't work)
-    if (data.user) {
-      await ensureUserProfile(data.user);
+    // If user is immediately available (auto-confirm enabled), create profile
+    if (data.user && data.session) {
+      try {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email || '',
+            full_name: name
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          // Don't throw here as the user is already created in auth
+        } else {
+          console.log('User profile created successfully during registration');
+        }
+      } catch (profileError) {
+        console.error('Error in profile creation:', profileError);
+      }
     }
 
     return data;
