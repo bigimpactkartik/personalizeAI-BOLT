@@ -26,9 +26,9 @@ const LoginPage: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.email.trim()) {
+    if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email.trim())) {
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
 
@@ -49,31 +49,12 @@ const LoginPage: React.FC = () => {
     setErrors({});
     
     try {
-      console.log('Attempting login...');
-      const result = await login(formData.email.trim(), formData.password);
-      console.log('Login successful, navigating to dashboard');
+      await login(formData.email, formData.password);
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
-      
-      let errorMessage = 'Invalid email or password. Please try again.';
-      
-      if (error.message?.includes('Email not confirmed')) {
-        errorMessage = 'Please check your email and confirm your account before signing in.';
-      } else if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-      } else if (error.message?.includes('Too many requests')) {
-        errorMessage = 'Too many login attempts. Please wait a moment and try again.';
-      } else if (error.message?.includes('Email link is invalid')) {
-        errorMessage = 'Your session has expired. Please try logging in again.';
-      } else if (error.message?.includes('signup disabled')) {
-        errorMessage = 'New signups are currently disabled. Please contact support.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
       setErrors({ 
-        general: errorMessage
+        general: error.message || 'Invalid email or password. Please try again.' 
       });
     } finally {
       setLoading(false);
@@ -82,7 +63,7 @@ const LoginPage: React.FC = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotPasswordEmail.trim()) return;
+    if (!forgotPasswordEmail) return;
     
     // Simulate sending reset email
     await new Promise(resolve => setTimeout(resolve, 1000));

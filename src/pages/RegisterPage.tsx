@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/UI/Button';
 import Input from '../components/UI/Input';
@@ -19,8 +19,6 @@ const RegisterPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -28,15 +26,15 @@ const RegisterPage: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
+    if (!formData.name) {
       newErrors.name = 'Name is required';
-    } else if (formData.name.trim().length < 2) {
+    } else if (formData.name.length < 2) {
       newErrors.name = 'Name must be at least 2 characters';
     }
 
-    if (!formData.email.trim()) {
+    if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email.trim())) {
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
 
@@ -69,44 +67,13 @@ const RegisterPage: React.FC = () => {
     setErrors({});
     
     try {
-      console.log('Starting registration process...');
-      const result = await register(formData.name.trim(), formData.email.trim(), formData.password);
-      
-      console.log('Registration result:', result);
-      
-      // Check if email confirmation is required
-      if (result.user && !result.session) {
-        console.log('Email confirmation required');
-        setEmailConfirmationRequired(true);
-        setRegistrationSuccess(true);
-      } else if (result.user && result.session) {
-        console.log('User automatically signed in');
-        setRegistrationSuccess(true);
-        // Navigate to dashboard after a short delay
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
-      } else {
-        throw new Error('Registration failed - unexpected response');
-      }
+      await register(formData.name, formData.email, formData.password);
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Registration error:', error);
-      
-      let errorMessage = 'Registration failed. Please try again.';
-      
-      if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
-        errorMessage = 'This email is already registered. Please try logging in instead.';
-      } else if (error.message?.includes('Password should be at least')) {
-        errorMessage = 'Password is too weak. Please choose a stronger password with at least 8 characters.';
-      } else if (error.message?.includes('email')) {
-        errorMessage = 'Please enter a valid email address.';
-      } else if (error.message?.includes('weak password')) {
-        errorMessage = 'Password is too weak. Please include uppercase, lowercase, numbers, and special characters.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      setErrors({ general: errorMessage });
+      setErrors({ 
+        general: error.message || 'Registration failed. Please try again.' 
+      });
     } finally {
       setLoading(false);
     }
@@ -122,42 +89,6 @@ const RegisterPage: React.FC = () => {
       setErrors(prev => ({ ...prev, general: '' }));
     }
   };
-
-  if (registrationSuccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 py-8 fade-in-up">
-        <div className="w-full max-w-md">
-          <Card className="p-6 sm:p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h1>
-            {emailConfirmationRequired ? (
-              <>
-                <p className="text-sm sm:text-base text-gray-600 mb-6">
-                  Please check your email to confirm your account before signing in.
-                </p>
-                <Link to="/login">
-                  <Button className="w-full">
-                    Go to Login
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <p className="text-sm sm:text-base text-gray-600 mb-6">
-                  Your account has been created successfully. Redirecting to dashboard...
-                </p>
-                <div className="flex items-center justify-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-                </div>
-              </>
-            )}
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 py-8 fade-in-up">

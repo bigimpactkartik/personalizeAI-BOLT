@@ -1,38 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Brain, LogOut, User, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { useState } from 'react';
 
 const Header: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching user profile:', error);
-        } else {
-          setUserProfile(data);
-        }
-      } catch (error) {
-        console.error('Error in fetchUserProfile:', error);
-      }
-    };
-
-    fetchUserProfile();
-  }, [user]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -48,9 +23,6 @@ const Header: React.FC = () => {
   };
 
   const getUserDisplayName = () => {
-    if (userProfile?.full_name) {
-      return userProfile.full_name;
-    }
     if (user?.user_metadata?.name) {
       return user.user_metadata.name;
     }
