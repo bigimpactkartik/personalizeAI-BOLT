@@ -43,7 +43,7 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Overall Project Experience validation
+    // Overall Project Experience validation (Required)
     if (formData.overallSatisfactionRating === 0) {
       newErrors.overallSatisfactionRating = 'Overall satisfaction rating is required';
     }
@@ -53,7 +53,7 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
       newErrors.experienceDescription = 'Experience description must be 500 characters or less';
     }
 
-    // Project Performance validation
+    // Project Performance validation (Required)
     if (formData.processingSpeedRating === 0) {
       newErrors.processingSpeedRating = 'Processing speed rating is required';
     }
@@ -64,15 +64,12 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
       newErrors.userInterfaceRating = 'User interface rating is required';
     }
 
-    // Quality Assessment validation
-    if (!formData.requirementsExplanation.trim()) {
-      newErrors.requirementsExplanation = 'Please explain how the project met or didn\'t meet your requirements';
-    }
+    // Quality Assessment validation (Optional except overall quality rating)
     if (formData.overallQualityRating === 0) {
       newErrors.overallQualityRating = 'Overall quality rating is required';
     }
 
-    // Areas for Improvement validation
+    // Areas for Improvement validation (Required)
     if (!formData.desiredFeatures.trim()) {
       newErrors.desiredFeatures = 'Please describe features you\'d like to see added';
     } else if (formData.desiredFeatures.length > 300) {
@@ -83,7 +80,7 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
       newErrors.improvementOther = 'Please specify other improvement aspects';
     }
 
-    // Additional Comments validation
+    // Additional Comments validation (Optional)
     if (formData.additionalComments.length > 1000) {
       newErrors.additionalComments = 'Additional comments must be 1000 characters or less';
     }
@@ -173,9 +170,10 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Overall Project Experience */}
+        {/* 1. Overall Project Experience (Required) */}
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center">
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mr-3">Required</span>
             Overall Project Experience
           </h3>
           
@@ -214,15 +212,16 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
           </div>
         </div>
 
-        {/* Project Performance */}
+        {/* 2. Project Performance (Required) */}
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center">
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mr-3">Required</span>
             Project Performance
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StarRating
-              label="Processing Speed"
+              label="Processing speed rating"
               rating={formData.processingSpeedRating}
               onRatingChange={(rating) => handleInputChange('processingSpeedRating', rating)}
               error={errors.processingSpeedRating}
@@ -230,7 +229,7 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
             />
             
             <StarRating
-              label="System Responsiveness"
+              label="System responsiveness rating"
               rating={formData.systemResponsivenessRating}
               onRatingChange={(rating) => handleInputChange('systemResponsivenessRating', rating)}
               error={errors.systemResponsivenessRating}
@@ -238,7 +237,7 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
             />
             
             <StarRating
-              label="User Interface"
+              label="User interface rating"
               rating={formData.userInterfaceRating}
               onRatingChange={(rating) => handleInputChange('userInterfaceRating', rating)}
               error={errors.userInterfaceRating}
@@ -247,13 +246,13 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
           </div>
         </div>
 
-        {/* Quality Assessment */}
+        {/* 3. Quality Assessment */}
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
             Quality Assessment
           </h3>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Did the project meet your requirements?
@@ -284,14 +283,17 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formData.metRequirements ? 'How did it meet your requirements?' : 'Why didn\'t it meet your requirements?'} <span className="text-red-500">*</span>
+                {formData.metRequirements ? 'If yes, how?' : 'If no, why?'}
               </label>
               <textarea
                 className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none ${
                   errors.requirementsExplanation ? 'border-red-500 focus:ring-red-500' : ''
                 }`}
                 rows={3}
-                placeholder="Please explain..."
+                placeholder={formData.metRequirements 
+                  ? "Please explain how the project met your requirements..." 
+                  : "Please explain why the project didn't meet your requirements..."
+                }
                 value={formData.requirementsExplanation}
                 onChange={(e) => handleInputChange('requirementsExplanation', e.target.value)}
               />
@@ -338,9 +340,10 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
           </div>
         </div>
 
-        {/* Areas for Improvement */}
+        {/* 4. Areas for Improvement (Required) */}
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center">
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mr-3">Required</span>
             Areas for Improvement
           </h3>
           
@@ -398,7 +401,7 @@ const ProjectFeedbackForm: React.FC<ProjectFeedbackFormProps> = ({
           </div>
         </div>
 
-        {/* Additional Comments */}
+        {/* 5. Additional Comments */}
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
             Additional Comments
