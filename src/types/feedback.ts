@@ -46,6 +46,49 @@ export interface FeedbackFormData {
   additionalComments: string;
 }
 
+// General platform feedback interface
+export interface PlatformFeedback {
+  id: string;
+  userId: string;
+  
+  // Overall Experience
+  overallRating: number; // 1-5 stars
+  category: FeedbackCategory;
+  
+  // Detailed Comments
+  comments: string; // max 1000 characters
+  
+  // Contact Information (optional)
+  contactForFollowUp: boolean;
+  
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlatformFeedbackFormData {
+  overallRating: number;
+  category: FeedbackCategory;
+  comments: string;
+  contactForFollowUp: boolean;
+}
+
+export type FeedbackCategory = 
+  | 'ui-ux' 
+  | 'performance' 
+  | 'features' 
+  | 'support' 
+  | 'pricing' 
+  | 'general';
+
+export const FEEDBACK_CATEGORIES = [
+  { value: 'ui-ux', label: 'UI/UX Design', description: 'Interface design and user experience' },
+  { value: 'performance', label: 'Performance', description: 'Speed, responsiveness, and reliability' },
+  { value: 'features', label: 'Features', description: 'Functionality and feature requests' },
+  { value: 'support', label: 'Support', description: 'Customer service and documentation' },
+  { value: 'pricing', label: 'Pricing', description: 'Pricing plans and value proposition' },
+  { value: 'general', label: 'General', description: 'Overall feedback and suggestions' }
+] as const;
+
 export const IMPROVEMENT_ASPECTS = [
   'Performance',
   'User Interface',

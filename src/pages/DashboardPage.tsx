@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../contexts/ProjectContext';
+import { PlatformFeedbackFormData } from '../types/feedback';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import ProgressBar from '../components/UI/ProgressBar';
+import Modal from '../components/UI/Modal';
+import PlatformFeedbackForm from '../components/Feedback/PlatformFeedbackForm';
+import feedbackService from '../services/feedbackService';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { projects, loading } = useProjects();
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+  const handleFeedbackSubmit = async (feedbackData: PlatformFeedbackFormData) => {
+    try {
+      await feedbackService.submitPlatformFeedback(feedbackData);
+      // Modal will show success state automatically
+    } catch (error) {
+      console.error('Error submitting platform feedback:', error);
+      throw error;
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -58,6 +73,13 @@ const DashboardPage: React.FC = () => {
     });
   };
 
+  const getUserDisplayName = () => {
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'User';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -75,7 +97,7 @@ const DashboardPage: React.FC = () => {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.name || user?.email?.split('@')[0]}!
+            Welcome back, {getUserDisplayName()}!
           </h1>
           <p className="text-sm sm:text-base text-gray-600">
             Manage your cold email campaigns and track their performance
@@ -110,14 +132,26 @@ const DashboardPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Create New Project Button */}
+        {/* Action Buttons */}
         <div className="mb-6 sm:mb-8">
-          <Link to="/create-project" className="block sm:inline-block">
-            <Button size="lg" className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Create New Project
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+            <Link to="/create-project" className="flex-1 sm:flex-none">
+              <Button size="lg" className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Create New Project
+              </Button>
+            </Link>
+            
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={() => setShowFeedbackModal(true)}
+              className="w-full sm:w-auto border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+            >
+              <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Feedback
             </Button>
-          </Link>
+          </div>
         </div>
 
         {/* Projects List */}
@@ -194,6 +228,19 @@ const DashboardPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Feedback Modal */}
+      <Modal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        title="Share Your Feedback"
+        size="lg"
+      >
+        <PlatformFeedbackForm
+          onSubmit={handleFeedbackSubmit}
+          onCancel={() => setShowFeedbackModal(false)}
+        />
+      </Modal>
     </div>
   );
 };
