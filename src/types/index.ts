@@ -1,17 +1,31 @@
 export interface User {
-  id: string;
   email: string;
-  name: string;
-  createdAt: string;
+  uuid: string;
 }
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<void>;
+  signup: (userData: SignupRequest) => Promise<{ message: string }>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   loading: boolean;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  uuid: string;
 }
 
 export interface Project {

@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthContextType } from '../types';
+import authService, { AuthUser, SignupRequest, LoginRequest } from '../services/authService';
+
+interface AuthContextType {
+  user: AuthUser | null;
+  login: (credentials: LoginRequest) => Promise<void>;
+  signup: (userData: SignupRequest) => Promise<{ message: string }>;
+  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  loading: boolean;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -15,84 +24,84 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Mock users database
-const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'demo@example.com',
-    name: 'Demo User',
-    createdAt: new Date().toISOString()
-  }
-];
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem('auth_user');
-    if (storedUser) {
+    // Check for stored user session on app load
+    const initializeAuth = () => {
       try {
-        setUser(JSON.parse(storedUser));
+        const storedUser = authService.getStoredUser();
+        const token = authService.getStoredToken();
+        
+        if (storedUser && token) {
+          setUser(storedUser);
+        } else {
+          // Clear any partial auth data
+          authService.clearAuthData();
+        }
       } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('auth_user');
+        console.error('Error initializing auth:', error);
+        authService.clearAuthData();
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Mock authentication - accept any email/password combination
-    const mockUser: User = {
-      id: Date.now().toString(),
-      email,
-      name: email.split('@')[0],
-      createdAt: new Date().toISOString()
-    };
-
-    setUser(mockUser);
-    localStorage.setItem('auth_user', JSON.stringify(mockUser));
+  const login = async (credentials: LoginRequest): Promise<void> => {
+    try {
+      setLoading(true);
+      const tokenResponse = await authService.login(credentials);
+      
+      const userData: AuthUser = {
+        email: credentials.email,
+        uuid: tokenResponse.uuid
+      };
+      
+      setUser(userData);
+    } catch (error) {
+      // Clear any partial auth data on login failure
+      authService.clearAuthData();
+      setUser(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<void> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Check if user already exists (mock validation)
-    const existingUser = mockUsers.find(u => u.email === email);
-    if (existingUser) {
-      throw new Error('User with this email already exists');
+  const signup = async (userData: SignupRequest): Promise<{ message: string }> => {
+    try {
+      setLoading(true);
+      return await authService.signup(userData);
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
     }
-
-    // Create new user
-    const newUser: User = {
-      id: Date.now().toString(),
-      email,
-      name,
-      createdAt: new Date().toISOString()
-    };
-
-    mockUsers.push(newUser);
-    setUser(newUser);
-    localStorage.setItem('auth_user', JSON.stringify(newUser));
   };
 
   const logout = async (): Promise<void> => {
-    setUser(null);
-    localStorage.removeItem('auth_user');
+    try {
+      setLoading(true);
+      await authService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      setLoading(false);
+    }
   };
 
   const value: AuthContextType = {
     user,
     login,
-    register,
+    signup,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && authService.isAuthenticated(),
     loading
   };
 
