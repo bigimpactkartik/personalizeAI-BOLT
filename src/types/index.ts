@@ -80,6 +80,11 @@ export interface ProjectFormData {
     ssmKey?: string;
   };
   companyTargeting: CompanyTargetingSettings[];
+  advancedSettings?: {
+    exaPrompt?: string;
+    icebreakerSystemPrompt?: string;
+    icebreakerUserPrompt?: string;
+  };
 }
 
 export interface CompanyTargetingSettings {

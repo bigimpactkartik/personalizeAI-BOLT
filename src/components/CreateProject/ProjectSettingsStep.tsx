@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Calculator, Key, Users } from 'lucide-react';
+import { ChevronDown, ChevronRight, Calculator, Key, Users, Settings } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
@@ -21,6 +21,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
 }) => {
   const [showEmailCapacity, setShowEmailCapacity] = useState(false);
   const [showAdvancedTargeting, setShowAdvancedTargeting] = useState(false);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [calculatedCapacity, setCalculatedCapacity] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -131,6 +132,15 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
     updateFormData({ companyTargeting: updated });
   };
 
+  const updateAdvancedSettings = (field: string, value: string) => {
+    updateFormData({
+      advancedSettings: {
+        ...formData.advancedSettings,
+        [field]: value
+      }
+    });
+  };
+
   return (
     <div className="fade-in-up">
       <Card className="p-6 sm:p-8">
@@ -170,6 +180,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                     value={formData.emailCapacity.mailboxes}
                     onChange={(e) => updateEmailCapacity('mailboxes', parseInt(e.target.value) || 1)}
                     error={errors.mailboxes}
+                    style={{ 
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none'
+                    }}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <Input
                     label="Emails per Mailbox"
@@ -180,6 +195,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                     value={formData.emailCapacity.emailsPerMailbox}
                     onChange={(e) => updateEmailCapacity('emailsPerMailbox', parseInt(e.target.value) || 1)}
                     error={errors.emailsPerMailbox}
+                    style={{ 
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none'
+                    }}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <Input
                     label="Batch Duration (Days)"
@@ -190,6 +210,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                     value={formData.emailCapacity.batchDuration}
                     onChange={(e) => updateEmailCapacity('batchDuration', parseInt(e.target.value) || 1)}
                     error={errors.batchDuration}
+                    style={{ 
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none'
+                    }}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <Input
                     label="Emails per Contact"
@@ -200,6 +225,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                     value={formData.emailCapacity.emailsPerContact}
                     onChange={(e) => updateEmailCapacity('emailsPerContact', parseInt(e.target.value) || 1)}
                     error={errors.emailsPerContact}
+                    style={{ 
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none'
+                    }}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
                 
@@ -311,6 +341,97 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
             </div>
           </div>
 
+          {/* Advanced Settings - Collapsible */}
+          <div className="transition-all duration-300 ease-in-out">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
+            >
+              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Advanced Settings</span>
+              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
+                showAdvancedSettings ? 'rotate-90' : ''
+              }`} />
+            </button>
+
+            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+              showAdvancedSettings ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
+                <div className="space-y-6">
+                  {/* Prompt Settings */}
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
+                      Prompt Settings
+                    </h4>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Custom Prompt for EXA Company Information Extraction
+                      </label>
+                      <textarea
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        rows={4}
+                        placeholder="Enter your custom prompt for extracting company information using EXA. This prompt will be used to analyze and identify company-related data from conversations..."
+                        value={formData.advancedSettings?.exaPrompt || ''}
+                        onChange={(e) => updateAdvancedSettings('exaPrompt', e.target.value)}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Optional. Leave empty to use system defaults.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Icebreaker Personalization Prompts */}
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
+                      Icebreaker Personalization Prompts
+                    </h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          System Prompt
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                          rows={4}
+                          placeholder="Enter the system instructions for personalizing icebreakers..."
+                          value={formData.advancedSettings?.icebreakerSystemPrompt || ''}
+                          onChange={(e) => updateAdvancedSettings('icebreakerSystemPrompt', e.target.value)}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Optional. System-level instructions for icebreaker generation.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          User Prompt
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                          rows={4}
+                          placeholder="Enter the user context for icebreaker generation..."
+                          value={formData.advancedSettings?.icebreakerUserPrompt || ''}
+                          onChange={(e) => updateAdvancedSettings('icebreakerUserPrompt', e.target.value)}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Optional. User-specific context for icebreaker personalization.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200">
+                    <p className="text-xs sm:text-sm text-blue-800">
+                      <strong>Note:</strong> All fields are optional. Empty fields will use system defaults. Custom prompts will take precedence when provided.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Advanced Company Targeting Settings - Collapsible */}
           <div className="transition-all duration-300 ease-in-out">
             <button
@@ -348,6 +469,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                           min="1"
                           value={targeting.numberOfContacts}
                           onChange={(e) => updateCompanyTargeting(index, 'numberOfContacts', parseInt(e.target.value) || 1)}
+                          style={{ 
+                            MozAppearance: 'textfield',
+                            WebkitAppearance: 'none'
+                          }}
+                          className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <div>
                           <Input

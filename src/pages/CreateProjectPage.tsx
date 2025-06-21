@@ -29,7 +29,12 @@ const CreateProjectPage: React.FC = () => {
     aiModel: {
       provider: 'openai-gpt4'
     },
-    companyTargeting: getDefaultCompanyTargeting()
+    companyTargeting: getDefaultCompanyTargeting(),
+    advancedSettings: {
+      exaPrompt: '',
+      icebreakerSystemPrompt: '',
+      icebreakerUserPrompt: ''
+    }
   });
 
   const steps = [
