@@ -73,21 +73,6 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
       newErrors.aiModel = 'Please select an AI model';
     }
 
-    // Validate API keys based on selected model
-    const provider = formData.aiModel.provider;
-    if (provider?.startsWith('openai') && !formData.aiModel.openaiKey?.trim()) {
-      newErrors.openaiKey = 'OpenAI API key is required';
-    }
-    if (provider?.startsWith('gemini') && !formData.aiModel.geminiKey?.trim()) {
-      newErrors.geminiKey = 'Gemini API key is required';
-    }
-    if (provider?.startsWith('claude') && !formData.aiModel.claudeKey?.trim()) {
-      newErrors.claudeKey = 'Claude API key is required';
-    }
-    if (provider === 'ssm' && !formData.aiModel.ssmKey?.trim()) {
-      newErrors.ssmKey = 'SSM API key is required';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -277,66 +262,11 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                   required
                 />
 
-                {/* All API Key Options */}
-                <div className="space-y-4">
-                  <div className="relative">
-                    <Input
-                      label="OpenAI API Key"
-                      type="password"
-                      placeholder="sk-..."
-                      value={formData.aiModel.openaiKey || ''}
-                      onChange={(e) => updateAiModel('openaiKey', e.target.value)}
-                      error={errors.openaiKey}
-                      className="pl-10"
-                    />
-                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                  </div>
-
-                  <div className="relative">
-                    <Input
-                      label="Gemini API Key"
-                      type="password"
-                      placeholder="AI..."
-                      value={formData.aiModel.geminiKey || ''}
-                      onChange={(e) => updateAiModel('geminiKey', e.target.value)}
-                      error={errors.geminiKey}
-                      className="pl-10"
-                    />
-                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                  </div>
-
-                  <div className="relative">
-                    <Input
-                      label="Claude API Key"
-                      type="password"
-                      placeholder="sk-ant-..."
-                      value={formData.aiModel.claudeKey || ''}
-                      onChange={(e) => updateAiModel('claudeKey', e.target.value)}
-                      error={errors.claudeKey}
-                      className="pl-10"
-                    />
-                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                  </div>
-
-                  <div className="relative">
-                    <Input
-                      label="SSM API Key"
-                      type="password"
-                      placeholder="sk-ant-..."
-                      value={formData.aiModel.ssmKey || ''}
-                      onChange={(e) => updateAiModel('ssmKey', e.target.value)}
-                      error={errors.ssmKey}
-                      className="pl-10"
-                    />
-                    <Key className="absolute left-3 top-9 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                  </div>
+                <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200">
+                  <p className="text-xs sm:text-sm text-blue-800">
+                    <strong>Note:</strong> AI model configuration and API keys will be handled automatically by our system.
+                  </p>
                 </div>
-              </div>
-
-              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200">
-                <p className="text-xs sm:text-sm text-blue-800">
-                  <strong>Note:</strong> API keys are encrypted and stored securely. You only need to provide the key for your selected AI model.
-                </p>
               </div>
             </div>
           </div>
@@ -454,15 +384,9 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                   {formData.companyTargeting.map((targeting, index) => (
                     <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200 transition-all duration-200 hover:shadow-md">
                       <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
-                        Company Size Range {index + 1}
+                        Company Size Range: {targeting.companySize}
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input
-                          label="Company Size"
-                          value={targeting.companySize}
-                          onChange={(e) => updateCompanyTargeting(index, 'companySize', e.target.value)}
-                          placeholder="e.g., 1-10"
-                        />
                         <Input
                           label="Number of Contacts"
                           type="number"
@@ -493,6 +417,15 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                           />
                           <p className="text-xs text-gray-500 mt-1">Separate roles with commas</p>
                         </div>
+                        <div>
+                          <Input
+                            label="Target Departments"
+                            value={targeting.targetDepartments}
+                            onChange={(e) => updateCompanyTargeting(index, 'targetDepartments', e.target.value)}
+                            placeholder="Engineering, Sales"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Separate departments with commas</p>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -507,7 +440,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
             Previous
           </Button>
           <Button onClick={handleNext} size="lg" className="w-full sm:w-auto transition-all duration-200">
-            Next: Payment
+            Review & Create
           </Button>
         </div>
       </Card>

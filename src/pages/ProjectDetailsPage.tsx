@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -18,10 +18,12 @@ import {
   Calendar,
   User,
   MessageSquare,
-  Star
+  Star,
+  RefreshCw
 } from 'lucide-react';
-import { useProjects } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useProjectPolling } from '../hooks/useProjectPolling';
+import projectService from '../services/projectService';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import ProgressBar from '../components/UI/ProgressBar';
@@ -32,58 +34,27 @@ import { FeedbackFormData, ProjectFeedback } from '../types/feedback';
 const ProjectDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { projects, updateProject } = useProjects();
   const { user } = useAuth();
-  const [processingLogs, setProcessingLogs] = useState<string[]>([]);
-  const [isSimulating, setIsSimulating] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'feedback'>('details');
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [existingFeedback, setExistingFeedback] = useState<ProjectFeedback[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const logsEndRef = useRef<HTMLDivElement>(null);
 
-  const project = projects.find(p => p.id === id);
+  // Use polling hook for real-time updates
+  const { project, loading, error, newLogs, refetch } = useProjectPolling({
+    projectId: id || '',
+    enabled: !!id,
+    interval: 60000 // 60 seconds
+  });
 
+  // Auto-scroll to latest log entry
   useEffect(() => {
-    if (!project) return;
-
-    // Initialize processing logs based on project status
-    if (project.status === 'completed') {
-      setProcessingLogs([
-        '✅ Project initialized successfully',
-        '✅ Data source validated and loaded',
-        '✅ AI model configured and ready',
-        '✅ Lead data processed and cleaned',
-        '✅ Company targeting rules applied',
-        '✅ Personalized emails generated',
-        '✅ Quality checks completed',
-        '✅ Results compiled and ready for download'
-      ]);
-    } else if (project.status === 'processing') {
-      const currentLogs = [
-        '✅ Project initialized successfully',
-        '✅ Data source validated and loaded',
-        '✅ AI model configured and ready',
-        '🔄 Processing lead data and applying filters...',
-        '⏳ Generating personalized email content...'
-      ];
-      setProcessingLogs(currentLogs);
-      
-      // Simulate real-time processing updates
-      if (!isSimulating) {
-        setIsSimulating(true);
-        simulateProcessing();
-      }
-    } else if (project.status === 'pending') {
-      setProcessingLogs(['⏳ Project queued for processing...']);
-    } else if (project.status === 'failed') {
-      setProcessingLogs([
-        '✅ Project initialized successfully',
-        '✅ Data source validated and loaded',
-        '❌ Error: AI model configuration failed',
-        '❌ Processing stopped due to configuration error'
-      ]);
+    if (newLogs.length > 0 && logsEndRef.current) {
+      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [project?.status, project?.progress]);
+  }, [newLogs]);
 
   useEffect(() => {
     // Load existing feedback when feedback tab is selected
@@ -106,63 +77,29 @@ const ProjectDetailsPage: React.FC = () => {
     }
   };
 
-  const simulateProcessing = () => {
-    if (!project || project.status !== 'processing') return;
+  const handleDownloadSheet = async () => {
+    if (!project) return;
 
-    const interval = setInterval(() => {
-      const currentProgress = project.progress;
+    try {
+      setDownloading(true);
+      const blob = await projectService.downloadProjectSheet(project.id);
       
-      if (currentProgress < 100) {
-        const newProgress = Math.min(currentProgress + Math.random() * 15, 100);
-        updateProject(project.id, { progress: newProgress });
-
-        // Add new log entries based on progress
-        if (newProgress > 40 && currentProgress <= 40) {
-          setProcessingLogs(prev => [
-            ...prev.slice(0, -1),
-            '✅ Lead data processed and cleaned',
-            '🔄 Applying company targeting rules...'
-          ]);
-        } else if (newProgress > 60 && currentProgress <= 60) {
-          setProcessingLogs(prev => [
-            ...prev.slice(0, -1),
-            '✅ Company targeting rules applied',
-            '🔄 Generating personalized email content...'
-          ]);
-        } else if (newProgress > 80 && currentProgress <= 80) {
-          setProcessingLogs(prev => [
-            ...prev.slice(0, -1),
-            '✅ Personalized emails generated',
-            '🔄 Running quality checks and validation...'
-          ]);
-        } else if (newProgress >= 100) {
-          setProcessingLogs(prev => [
-            ...prev.slice(0, -1),
-            '✅ Quality checks completed',
-            '✅ Results compiled and ready for download'
-          ]);
-          updateProject(project.id, { 
-            status: 'completed',
-            progress: 100,
-            resultFilePath: `/results/project-${project.id}-results.xlsx`
-          });
-          clearInterval(interval);
-        }
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  };
-
-  const handleDownload = () => {
-    // Simulate file download
-    const link = document.createElement('a');
-    link.href = '#';
-    link.download = `${project?.projectName.replace(/\s+/g, '_')}_results.xlsx`;
-    link.click();
-    
-    // Show success message (you could use a toast notification here)
-    alert('Download started! Your personalized email results are being downloaded.');
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${project.name.replace(/\s+/g, '_')}_results.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error: any) {
+      console.error('Download failed:', error);
+      alert('Download failed. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleFeedbackSubmit = async (feedbackData: FeedbackFormData) => {
@@ -180,12 +117,12 @@ const ProjectDetailsPage: React.FC = () => {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
+    switch (status.toUpperCase()) {
+      case 'COMPLETED':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case 'processing':
+      case 'ONGOING':
         return <Clock className="h-5 w-5 text-blue-600" />;
-      case 'failed':
+      case 'FAILED':
         return <XCircle className="h-5 w-5 text-red-600" />;
       default:
         return <AlertCircle className="h-5 w-5 text-yellow-600" />;
@@ -193,29 +130,21 @@ const ProjectDetailsPage: React.FC = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
+    switch (status.toUpperCase()) {
+      case 'COMPLETED':
         return 'green';
-      case 'processing':
+      case 'ONGOING':
         return 'blue';
-      case 'failed':
+      case 'FAILED':
         return 'red';
       default:
         return 'yellow';
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Completed';
-      case 'processing':
-        return 'Processing';
-      case 'failed':
-        return 'Failed';
-      default:
-        return 'Pending';
-    }
+  const getProgressPercentage = () => {
+    if (!project || project.total_row === 0) return 0;
+    return Math.round((project.row_completed / project.total_row) * 100);
   };
 
   const formatDate = (dateString: string) => {
@@ -244,22 +173,45 @@ const ProjectDetailsPage: React.FC = () => {
     );
   };
 
-  if (!project) {
+  if (loading && !project) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading project details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !project) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">Project Not Found</h1>
-          <p className="text-gray-600 mb-4">The project you're looking for doesn't exist.</p>
-          <Link to="/dashboard">
-            <Button>Back to Dashboard</Button>
-          </Link>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            {error || 'Project Not Found'}
+          </h1>
+          <p className="text-gray-600 mb-4">
+            {error || "The project you're looking for doesn't exist."}
+          </p>
+          <div className="space-x-4">
+            <Button onClick={refetch} variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+            <Link to="/dashboard">
+              <Button>Back to Dashboard</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   const userHasSubmittedFeedback = existingFeedback.some(feedback => feedback.userId === user?.uuid);
+  const isOngoing = project.status.toUpperCase() === 'ONGOING';
+  const isCompleted = project.status.toUpperCase() === 'COMPLETED';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -278,23 +230,44 @@ const ProjectDetailsPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                {project.projectName}
+                {project.name}
               </h1>
               <div className="flex items-center space-x-3">
                 {getStatusIcon(project.status)}
                 <span className="text-sm sm:text-base font-medium text-gray-600">
-                  {getStatusText(project.status)}
+                  {project.status.toUpperCase()}
                 </span>
-                {project.status === 'processing' && (
+                {isOngoing && (
                   <span className="text-sm text-gray-500">
-                    {project.progress}% complete
+                    {getProgressPercentage()}% complete ({project.row_completed}/{project.total_row})
                   </span>
+                )}
+                {isOngoing && (
+                  <div className="flex items-center space-x-2 text-sm text-blue-600">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Auto-updating every 60s</span>
+                  </div>
                 )}
               </div>
             </div>
             
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-              {project.status === 'completed' && !userHasSubmittedFeedback && (
+              <Button
+                onClick={refetch}
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                Refresh
+              </Button>
+              
+              {isCompleted && !userHasSubmittedFeedback && (
                 <Button
                   onClick={() => {
                     setActiveTab('feedback');
@@ -308,10 +281,25 @@ const ProjectDetailsPage: React.FC = () => {
                   Submit Feedback
                 </Button>
               )}
-              {project.status === 'completed' && project.resultFilePath && (
-                <Button onClick={handleDownload} size="lg" className="w-full sm:w-auto">
-                  <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Download Results
+              
+              {isCompleted && (
+                <Button 
+                  onClick={handleDownloadSheet} 
+                  size="lg" 
+                  className="w-full sm:w-auto"
+                  disabled={downloading}
+                >
+                  {downloading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                      Download Results
+                    </>
+                  )}
                 </Button>
               )}
             </div>
@@ -359,7 +347,7 @@ const ProjectDetailsPage: React.FC = () => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Progress Section */}
-              {(project.status === 'processing' || project.status === 'completed') && (
+              {(isOngoing || isCompleted) && (
                 <Card className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <Zap className="h-5 w-5 text-blue-600" />
@@ -369,17 +357,28 @@ const ProjectDetailsPage: React.FC = () => {
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-                      <span className="text-sm text-gray-500">{project.progress}%</span>
+                      <span className="text-sm text-gray-500">{getProgressPercentage()}%</span>
                     </div>
                     <ProgressBar 
-                      value={project.progress} 
+                      value={getProgressPercentage()} 
                       color={getStatusColor(project.status)}
                       size="lg"
                     />
                   </div>
 
-                  {project.status === 'processing' && (
-                    <div className="flex items-center space-x-2 text-sm text-blue-600">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Rows Completed:</span>
+                      <span className="ml-2 font-medium text-gray-900">{project.row_completed}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Total Rows:</span>
+                      <span className="ml-2 font-medium text-gray-900">{project.total_row}</span>
+                    </div>
+                  </div>
+
+                  {isOngoing && (
+                    <div className="mt-4 flex items-center space-x-2 text-sm text-blue-600">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Processing your data with AI...</span>
                     </div>
@@ -387,7 +386,7 @@ const ProjectDetailsPage: React.FC = () => {
                 </Card>
               )}
 
-              {/* Processing Commentary */}
+              {/* Processing Activity */}
               <Card className="p-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <Eye className="h-5 w-5 text-green-600" />
@@ -395,37 +394,49 @@ const ProjectDetailsPage: React.FC = () => {
                 </div>
                 
                 <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-                  {processingLogs.map((log, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg fade-in-up"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {log.startsWith('✅') && <CheckCircle className="h-4 w-4 text-green-600" />}
-                        {log.startsWith('🔄') && <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />}
-                        {log.startsWith('⏳') && <Clock className="h-4 w-4 text-yellow-600" />}
-                        {log.startsWith('❌') && <XCircle className="h-4 w-4 text-red-600" />}
-                      </div>
-                      <span className="text-sm text-gray-700 flex-1">
-                        {log.replace(/^[✅🔄⏳❌]\s*/, '')}
-                      </span>
-                      <span className="text-xs text-gray-500 flex-shrink-0">
-                        {new Date().toLocaleTimeString()}
-                      </span>
+                  {project.logs.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p>No activity logs yet</p>
                     </div>
-                  ))}
+                  ) : (
+                    <>
+                      {/* Reverse logs to show newest first */}
+                      {[...project.logs].reverse().map((log, index) => {
+                        const isNewLog = newLogs.includes(log);
+                        return (
+                          <div 
+                            key={`${log}-${index}`}
+                            className={`flex items-start space-x-3 p-3 bg-gray-50 rounded-lg transition-all duration-500 ${
+                              isNewLog ? 'fade-in-up bg-blue-50 border border-blue-200' : ''
+                            }`}
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                            </div>
+                            <span className="text-sm text-gray-700 flex-1">{log}</span>
+                            <span className="text-xs text-gray-500 flex-shrink-0">
+                              {new Date().toLocaleTimeString()}
+                            </span>
+                          </div>
+                        );
+                      })}
+                      <div ref={logsEndRef} />
+                    </>
+                  )}
                 </div>
               </Card>
 
               {/* Project Description */}
-              <Card className="p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <FileText className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">Project Description</h2>
-                </div>
-                <p className="text-gray-700 leading-relaxed">{project.description}</p>
-              </Card>
+              {project.description && (
+                <Card className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <FileText className="h-5 w-5 text-purple-600" />
+                    <h2 className="text-lg font-semibold text-gray-900">Project Description</h2>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">{project.description}</p>
+                </Card>
+              )}
             </div>
 
             {/* Sidebar */}
@@ -435,61 +446,42 @@ const ProjectDetailsPage: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Information</h3>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Created</p>
-                      <p className="text-sm text-gray-600">{formatDate(project.createdAt)}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <User className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Target Audience</p>
-                      <p className="text-sm text-gray-600">{project.targetAudience}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
                     <Database className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm font-medium text-gray-900">Data Source</p>
-                      <p className="text-sm text-gray-600 capitalize">{project.dataSource}</p>
+                      <p className="text-sm text-gray-600">
+                        {project.sheet_link ? 'Google Sheets' : 'Excel Upload'}
+                      </p>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-3">
-                    <Brain className="h-4 w-4 text-gray-400" />
+                    <Mail className="h-4 w-4 text-gray-400" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">AI Model</p>
-                      <p className="text-sm text-gray-600 capitalize">{project.aiModelProvider}</p>
+                      <p className="text-sm font-medium text-gray-900">Email Configuration</p>
+                      <p className="text-sm text-gray-600">
+                        {project.no_of_mailbox} mailbox{project.no_of_mailbox !== 1 ? 'es' : ''}, 
+                        {project.emails_per_mailbox} emails each
+                      </p>
                     </div>
                   </div>
-                </div>
-              </Card>
-
-              {/* Email Capacity */}
-              <Card className="p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Mail className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">Email Capacity</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Mailboxes</span>
-                    <span className="text-sm font-medium text-gray-900">{project.emailCapacity.mailboxes}</span>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Target className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Contact Strategy</p>
+                      <p className="text-sm text-gray-600">
+                        {project.email_per_contact} email{project.email_per_contact !== 1 ? 's' : ''} per contact
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Emails per Mailbox</span>
-                    <span className="text-sm font-medium text-gray-900">{project.emailCapacity.emailsPerMailbox}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Batch Duration</span>
-                    <span className="text-sm font-medium text-gray-900">{project.emailCapacity.batchDuration} days</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Emails per Contact</span>
-                    <span className="text-sm font-medium text-gray-900">{project.emailCapacity.emailsPerContact}</span>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Batch Duration</p>
+                      <p className="text-sm text-gray-600">{project.batch_duration_days} days</p>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -498,31 +490,69 @@ const ProjectDetailsPage: React.FC = () => {
               <Card className="p-6">
                 <div className="flex items-center space-x-3 mb-4">
                   <Target className="h-5 w-5 text-green-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">Targeting Rules</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Targeting Configuration</h3>
                 </div>
                 <div className="space-y-4">
-                  {project.companyTargeting.slice(0, 2).map((targeting, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-900">
-                          Company Size: {targeting.companySize}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {targeting.numberOfContacts} contacts
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600">
-                        Primary: {targeting.primaryTargetRoles}
-                      </p>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="font-medium text-gray-900">Very Small (≤{project.company_size_very_small_max})</p>
+                      <p className="text-gray-600">{project.contact_limit_very_small} contacts</p>
                     </div>
-                  ))}
-                  {project.companyTargeting.length > 2 && (
-                    <p className="text-xs text-gray-500 text-center">
-                      +{project.companyTargeting.length - 2} more targeting rules
-                    </p>
-                  )}
+                    <div>
+                      <p className="font-medium text-gray-900">Small (≤{project.company_size_small_max})</p>
+                      <p className="text-gray-600">{project.contact_limit_small_company} contacts</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Medium (≤{project.company_size_medium_max})</p>
+                      <p className="text-gray-600">{project.contact_limit_medium_company} contacts</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Large (≤{project.company_size_large_max})</p>
+                      <p className="text-gray-600">{project.contact_limit_large_company} contacts</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="font-medium text-gray-900">Enterprise (≥{project.company_size_enterprise_min})</p>
+                      <p className="text-gray-600">{project.contact_limit_enterprise} contacts</p>
+                    </div>
+                  </div>
                 </div>
               </Card>
+
+              {/* Seniority Targeting */}
+              {(project.seniority_tier_1.length > 0 || project.seniority_tier_2.length > 0) && (
+                <Card className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <User className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Seniority Targeting</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {project.seniority_tier_1.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 mb-1">Tier 1 (Primary)</p>
+                        <div className="flex flex-wrap gap-1">
+                          {project.seniority_tier_1.map((role, index) => (
+                            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                              {role}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {project.seniority_tier_2.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 mb-1">Tier 2 (Secondary)</p>
+                        <div className="flex flex-wrap gap-1">
+                          {project.seniority_tier_2.map((role, index) => (
+                            <span key={index} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                              {role}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
         ) : (
@@ -531,7 +561,7 @@ const ProjectDetailsPage: React.FC = () => {
             {showFeedbackForm ? (
               <ProjectFeedbackForm
                 projectId={project.id}
-                projectName={project.projectName}
+                projectName={project.name}
                 onSubmit={handleFeedbackSubmit}
                 onCancel={() => setShowFeedbackForm(false)}
               />
@@ -549,7 +579,7 @@ const ProjectDetailsPage: React.FC = () => {
                     </p>
                   </div>
                   
-                  {project.status === 'completed' && !userHasSubmittedFeedback && (
+                  {isCompleted && !userHasSubmittedFeedback && (
                     <Button
                       onClick={() => setShowFeedbackForm(true)}
                       className="w-full sm:w-auto"
@@ -686,12 +716,12 @@ const ProjectDetailsPage: React.FC = () => {
                     <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Feedback Yet</h3>
                     <p className="text-gray-600 mb-6">
-                      {project.status === 'completed' 
+                      {isCompleted 
                         ? 'Be the first to share your experience with this project.'
                         : 'Feedback will be available once the project is completed.'
                       }
                     </p>
-                    {project.status === 'completed' && !userHasSubmittedFeedback && (
+                    {isCompleted && !userHasSubmittedFeedback && (
                       <Button onClick={() => setShowFeedbackForm(true)}>
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Submit Feedback

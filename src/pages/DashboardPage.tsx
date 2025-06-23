@@ -1,25 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare } from 'lucide-react';
+import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare, Eye } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useProjects } from '../contexts/ProjectContext';
 import { PlatformFeedbackFormData } from '../types/feedback';
+import projectService, { ProjectResponse } from '../services/projectService';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
-import ProgressBar from '../components/UI/ProgressBar';
 import Modal from '../components/UI/Modal';
 import PlatformFeedbackForm from '../components/Feedback/PlatformFeedbackForm';
 import feedbackService from '../services/feedbackService';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { projects, loading } = useProjects();
+  const [projects, setProjects] = useState<ProjectResponse[]>([]);
+  const [projectIds, setProjectIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [downloadingProjects, setDownloadingProjects] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (user?.uuid) {
+      fetchUserProjects();
+    }
+  }, [user?.uuid]);
+
+  const fetchUserProjects = async () => {
+    if (!user?.uuid) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // First, get all project IDs for the user
+      const ids = await projectService.getUserProjects(user.uuid);
+      setProjectIds(ids);
+
+      // Then fetch detailed information for each project
+      const projectPromises = ids.map(id => projectService.getProjectById(id));
+      const projectsData = await Promise.all(projectPromises);
+      
+      setProjects(projectsData);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error fetching projects:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadSheet = async (projectId: string, projectName: string) => {
+    try {
+      setDownloadingProjects(prev => new Set(prev).add(projectId));
+      
+      const blob = await projectService.downloadProjectSheet(projectId);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${projectName.replace(/\s+/g, '_')}_results.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error: any) {
+      console.error('Download failed:', error);
+      alert('Download failed. Please try again.');
+    } finally {
+      setDownloadingProjects(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(projectId);
+        return newSet;
+      });
+    }
+  };
 
   const handleFeedbackSubmit = async (feedbackData: PlatformFeedbackFormData) => {
     try {
       await feedbackService.submitPlatformFeedback(feedbackData);
-      // Modal will show success state automatically
     } catch (error) {
       console.error('Error submitting platform feedback:', error);
       throw error;
@@ -27,41 +87,31 @@ const DashboardPage: React.FC = () => {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
+    switch (status.toUpperCase()) {
+      case 'COMPLETED':
         return <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />;
-      case 'processing':
+      case 'ONGOING':
         return <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />;
-      case 'failed':
+      case 'FAILED':
         return <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />;
       default:
         return <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'green';
-      case 'processing':
-        return 'blue';
-      case 'failed':
-        return 'red';
+  const getStatusBadge = (status: string) => {
+    const statusUpper = status.toUpperCase();
+    const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+    
+    switch (statusUpper) {
+      case 'COMPLETED':
+        return `${baseClasses} bg-green-100 text-green-800`;
+      case 'ONGOING':
+        return `${baseClasses} bg-blue-100 text-blue-800`;
+      case 'FAILED':
+        return `${baseClasses} bg-red-100 text-red-800`;
       default:
-        return 'yellow';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Completed';
-      case 'processing':
-        return 'Processing';
-      case 'failed':
-        return 'Failed';
-      default:
-        return 'Pending';
+        return `${baseClasses} bg-yellow-100 text-yellow-800`;
     }
   };
 
@@ -80,12 +130,32 @@ const DashboardPage: React.FC = () => {
     return 'User';
   };
 
+  const getProgressPercentage = (project: ProjectResponse) => {
+    if (project.total_row === 0) return 0;
+    return Math.round((project.row_completed / project.total_row) * 100);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading your projects...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Projects</h1>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={fetchUserProjects}>
+            Try Again
+          </Button>
         </div>
       </div>
     );
@@ -114,21 +184,21 @@ const DashboardPage: React.FC = () => {
           </Card>
           <Card className="text-center p-4 sm:p-6">
             <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-              {projects.filter(p => p.status === 'completed').length}
+              {projects.filter(p => p.status.toUpperCase() === 'COMPLETED').length}
             </div>
             <div className="text-xs sm:text-sm text-gray-600">Completed</div>
           </Card>
           <Card className="text-center p-4 sm:p-6">
             <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">
-              {projects.filter(p => p.status === 'processing').length}
+              {projects.filter(p => p.status.toUpperCase() === 'ONGOING').length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Processing</div>
+            <div className="text-xs sm:text-sm text-gray-600">Ongoing</div>
           </Card>
           <Card className="text-center p-4 sm:p-6">
-            <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-              {projects.filter(p => p.status === 'pending').length}
+            <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
+              {projects.filter(p => p.status.toUpperCase() === 'FAILED').length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Pending</div>
+            <div className="text-xs sm:text-sm text-gray-600">Failed</div>
           </Card>
         </div>
 
@@ -177,46 +247,60 @@ const DashboardPage: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-                          {project.projectName}
+                          {project.name}
                         </h3>
-                        <div className="flex items-center space-x-1 flex-shrink-0">
-                          {getStatusIcon(project.status)}
-                          <span className="text-xs sm:text-sm font-medium text-gray-600">
-                            {getStatusText(project.status)}
-                          </span>
-                        </div>
+                        <span className={getStatusBadge(project.status)}>
+                          {project.status.toUpperCase()}
+                        </span>
                       </div>
                       
-                      <p className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-2">{project.description}</p>
+                      {project.description && (
+                        <p className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-2">
+                          {project.description}
+                        </p>
+                      )}
                       
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
-                        <span>Created: {formatDate(project.createdAt)}</span>
-                        <span>AI Model: {project.aiModelProvider}</span>
-                        {project.status === 'processing' && (
+                        <div className="flex items-center space-x-1">
+                          {getStatusIcon(project.status)}
+                          <span>Status: {project.status}</span>
+                        </div>
+                        <span>Mailboxes: {project.no_of_mailbox}</span>
+                        <span>Emails/Mailbox: {project.emails_per_mailbox}</span>
+                        {project.status.toUpperCase() === 'ONGOING' && (
                           <div className="flex items-center space-x-2">
-                            <span>Progress:</span>
-                            <div className="w-16 sm:w-24">
-                              <ProgressBar 
-                                value={project.progress} 
-                                size="sm" 
-                                color={getStatusColor(project.status)}
-                              />
-                            </div>
-                            <span>{project.progress}%</span>
+                            <span>Progress: {getProgressPercentage(project)}%</span>
+                            <span>({project.row_completed}/{project.total_row})</span>
                           </div>
                         )}
                       </div>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
-                      {project.status === 'completed' && project.resultFilePath && (
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                          <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                          Download
+                      {project.status.toUpperCase() === 'COMPLETED' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full sm:w-auto"
+                          onClick={() => handleDownloadSheet(project.id, project.name)}
+                          disabled={downloadingProjects.has(project.id)}
+                        >
+                          {downloadingProjects.has(project.id) ? (
+                            <>
+                              <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                              Downloading...
+                            </>
+                          ) : (
+                            <>
+                              <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                              Download Sheet
+                            </>
+                          )}
                         </Button>
                       )}
                       <Link to={`/project/${project.id}`} className="w-full sm:w-auto">
                         <Button variant="ghost" size="sm" className="w-full sm:w-auto">
+                          <Eye className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           View Details
                         </Button>
                       </Link>
