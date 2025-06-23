@@ -78,27 +78,17 @@ const ProjectDetailsPage: React.FC = () => {
   };
 
   const handleDownloadSheet = async () => {
-    if (!project) return;
+    if (!project?.response_sheet_link) return;
 
     try {
       setDownloading(true);
-      const blob = await projectService.downloadProjectSheet(project.id);
-      
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${project.name.replace(/\s+/g, '_')}_results.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
+      // Open the response sheet link in a new tab
+      window.open(project.response_sheet_link, '_blank', 'noopener,noreferrer');
     } catch (error: any) {
       console.error('Download failed:', error);
       alert('Download failed. Please try again.');
     } finally {
-      setDownloading(false);
+      setTimeout(() => setDownloading(false), 2000);
     }
   };
 
@@ -141,6 +131,20 @@ const ProjectDetailsPage: React.FC = () => {
         return 'red';
       default:
         return 'yellow';
+    }
+  };
+
+  const getStatusText = (status: string | null | undefined) => {
+    const statusUpper = (status || '').toUpperCase();
+    switch (statusUpper) {
+      case 'COMPLETED':
+        return 'COMPLETED';
+      case 'ONGOING':
+        return 'ONGOING';
+      case 'FAILED':
+        return 'FAILED';
+      default:
+        return 'READY TO PROCESS';
     }
   };
 
@@ -238,7 +242,7 @@ const ProjectDetailsPage: React.FC = () => {
               <div className="flex items-center space-x-3">
                 {getStatusIcon(project.status)}
                 <span className="text-sm sm:text-base font-medium text-gray-600">
-                  {(project.status || 'UNKNOWN').toUpperCase()}
+                  {getStatusText(project.status)}
                 </span>
                 {isOngoing && (
                   <span className="text-sm text-gray-500">
@@ -285,16 +289,20 @@ const ProjectDetailsPage: React.FC = () => {
                 </Button>
               )}
               
-              {isCompleted && (
-                <Button 
-                  onClick={handleDownloadSheet} 
-                  size="lg" 
-                  className="w-full sm:w-auto"
-                  disabled={downloading}
+              {isCompleted && project.response_sheet_link && (
+                <a
+                  href={project.response_sheet_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium rounded-lg transition-colors duration-200 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={() => {
+                    setDownloading(true);
+                    setTimeout(() => setDownloading(false), 2000);
+                  }}
                 >
                   {downloading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                       Downloading...
                     </>
                   ) : (
@@ -303,7 +311,7 @@ const ProjectDetailsPage: React.FC = () => {
                       Download Results
                     </>
                   )}
-                </Button>
+                </a>
               )}
             </div>
           </div>

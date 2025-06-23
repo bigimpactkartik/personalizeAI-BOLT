@@ -116,6 +116,20 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const getStatusText = (status: string) => {
+    const statusUpper = (status || '').toUpperCase();
+    switch (statusUpper) {
+      case 'COMPLETED':
+        return 'COMPLETED';
+      case 'ONGOING':
+        return 'ONGOING';
+      case 'FAILED':
+        return 'FAILED';
+      default:
+        return 'READY TO PROCESS';
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -251,7 +265,7 @@ const DashboardPage: React.FC = () => {
                           {project.name}
                         </h3>
                         <span className={getStatusBadge(project.status)}>
-                          {(project.status || '').toUpperCase()}
+                          {getStatusText(project.status)}
                         </span>
                       </div>
                       
@@ -264,7 +278,7 @@ const DashboardPage: React.FC = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
                         <div className="flex items-center space-x-1">
                           {getStatusIcon(project.status)}
-                          <span>Status: {project.status || 'Unknown'}</span>
+                          <span>Status: {getStatusText(project.status)}</span>
                         </div>
                         <span>Mailboxes: {project.no_of_mailbox}</span>
                         <span>Emails/Mailbox: {project.emails_per_mailbox}</span>
@@ -278,13 +292,26 @@ const DashboardPage: React.FC = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
-                      {(project.status || '').toUpperCase() === 'COMPLETED' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full sm:w-auto"
-                          onClick={() => handleDownloadSheet(project.id, project.name)}
-                          disabled={downloadingProjects.has(project.id)}
+                      {(project.status || '').toUpperCase() === 'COMPLETED' && project.response_sheet_link && (
+                        <a
+                          href={project.response_sheet_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 w-full sm:w-auto"
+                          onClick={(e) => {
+                            if (downloadingProjects.has(project.id)) {
+                              e.preventDefault();
+                            } else {
+                              setDownloadingProjects(prev => new Set(prev).add(project.id));
+                              setTimeout(() => {
+                                setDownloadingProjects(prev => {
+                                  const newSet = new Set(prev);
+                                  newSet.delete(project.id);
+                                  return newSet;
+                                });
+                              }, 2000);
+                            }
+                          }}
                         >
                           {downloadingProjects.has(project.id) ? (
                             <>
@@ -297,7 +324,7 @@ const DashboardPage: React.FC = () => {
                               Download Sheet
                             </>
                           )}
-                        </Button>
+                        </a>
                       )}
                       <Link to={`/project/${project.id}`} className="w-full sm:w-auto">
                         <Button variant="ghost" size="sm" className="w-full sm:w-auto">
