@@ -160,6 +160,7 @@ const ProjectDetailsPage: React.FC = () => {
   };
 
   const renderStars = (rating: number) => {
+    const disabled = false; // Fix: Define disabled variable
     return (
       <div className="flex items-center space-x-1">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -396,7 +397,7 @@ const ProjectDetailsPage: React.FC = () => {
                 </div>
                 
                 <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-                  {project.logs.length === 0 ? (
+                  {project.logs && project.logs.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                       <p>No activity logs yet</p>
@@ -404,7 +405,7 @@ const ProjectDetailsPage: React.FC = () => {
                   ) : (
                     <>
                       {/* Reverse logs to show newest first */}
-                      {[...project.logs].reverse().map((log, index) => {
+                      {project.logs && [...project.logs].reverse().map((log, index) => {
                         const isNewLog = newLogs.includes(log);
                         return (
                           <div 
@@ -521,14 +522,14 @@ const ProjectDetailsPage: React.FC = () => {
               </Card>
 
               {/* Seniority Targeting */}
-              {(project.seniority_tier_1.length > 0 || project.seniority_tier_2.length > 0) && (
+              {(project.seniority_tier_1 && project.seniority_tier_1.length > 0 || project.seniority_tier_2 && project.seniority_tier_2.length > 0) && (
                 <Card className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <User className="h-5 w-5 text-blue-600" />
                     <h3 className="text-lg font-semibold text-gray-900">Seniority Targeting</h3>
                   </div>
                   <div className="space-y-3">
-                    {project.seniority_tier_1.length > 0 && (
+                    {project.seniority_tier_1 && project.seniority_tier_1.length > 0 && (
                       <div>
                         <p className="text-sm font-medium text-gray-900 mb-1">Tier 1 (Primary)</p>
                         <div className="flex flex-wrap gap-1">
@@ -540,7 +541,7 @@ const ProjectDetailsPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    {project.seniority_tier_2.length > 0 && (
+                    {project.seniority_tier_2 && project.seniority_tier_2.length > 0 && (
                       <div>
                         <p className="text-sm font-medium text-gray-900 mb-1">Tier 2 (Secondary)</p>
                         <div className="flex flex-wrap gap-1">
@@ -672,7 +673,7 @@ const ProjectDetailsPage: React.FC = () => {
                           </div>
 
                           {/* Improvement Areas */}
-                          {(feedback.desiredFeatures || feedback.improvementAspects.length > 0) && (
+                          {(feedback.desiredFeatures || feedback.improvementAspects && feedback.improvementAspects.length > 0) && (
                             <div>
                               <h4 className="font-medium text-gray-900 mb-3">Areas for Improvement</h4>
                               {feedback.desiredFeatures && (
@@ -681,7 +682,7 @@ const ProjectDetailsPage: React.FC = () => {
                                   <p className="text-sm text-gray-700">{feedback.desiredFeatures}</p>
                                 </div>
                               )}
-                              {feedback.improvementAspects.length > 0 && (
+                              {feedback.improvementAspects && feedback.improvementAspects.length > 0 && (
                                 <div>
                                   <p className="text-sm text-gray-600 mb-2">Improvement Aspects:</p>
                                   <div className="flex flex-wrap gap-2">
