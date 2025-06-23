@@ -23,10 +23,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjectPolling } from '../hooks/useProjectPolling';
+import { useDownload } from '../hooks/useDownload';
 import projectService from '../services/projectService';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import ProgressBar from '../components/UI/ProgressBar';
+import DownloadButton from '../components/UI/DownloadButton';
 import ProjectFeedbackForm from '../components/Feedback/ProjectFeedbackForm';
 import feedbackService from '../services/feedbackService';
 import { FeedbackFormData, ProjectFeedback } from '../types/feedback';
@@ -39,7 +41,6 @@ const ProjectDetailsPage: React.FC = () => {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [existingFeedback, setExistingFeedback] = useState<ProjectFeedback[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
-  const [downloading, setDownloading] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   // Use polling hook for real-time updates
@@ -47,6 +48,23 @@ const ProjectDetailsPage: React.FC = () => {
     projectId: id || '',
     enabled: !!id,
     interval: 60000 // 60 seconds
+  });
+
+  // Download hook with success/error handling
+  const {
+    isDownloading,
+    progress,
+    error: downloadError,
+    downloadFromResponseLink,
+    downloadProjectSheet,
+    reset: resetDownload
+  } = useDownload({
+    onSuccess: () => {
+      console.log('Download completed successfully');
+    },
+    onError: (error) => {
+      console.error('Download failed:', error);
+    }
   });
 
   // Auto-scroll to latest log entry
@@ -63,6 +81,13 @@ const ProjectDetailsPage: React.FC = () => {
     }
   }, [activeTab, project, user]);
 
+  // Reset download error when project changes
+  useEffect(() => {
+    if (downloadError) {
+      resetDownload();
+    }
+  }, [project?.id]);
+
   const loadProjectFeedback = async () => {
     if (!project || !user) return;
 
@@ -78,17 +103,31 @@ const ProjectDetailsPage: React.FC = () => {
   };
 
   const handleDownloadSheet = async () => {
-    if (!project?.response_sheet_link) return;
+    if (!project) return;
 
     try {
-      setDownloading(true);
-      // Open the response sheet link in a new tab
-      window.open(project.response_sheet_link, '_blank', 'noopener,noreferrer');
-    } catch (error: any) {
-      console.error('Download failed:', error);
-      alert('Download failed. Please try again.');
-    } finally {
-      setTimeout(() => setDownloading(false), 2000);
+      if (project.response_sheet_link) {
+        // Use response sheet link if available
+        await downloadFromResponseLink(project.response_sheet_link, project.name);
+      } else {
+        // Fallback to API endpoint
+        await downloadProjectSheet(project.id, project.name);
+      }
+    } catch (error) {
+      console.error('Download initiation failed:', error);
+    }
+  };
+
+  const handleDownloadResults = async () => {
+    if (!project?.response_sheet_link) {
+      alert('No results available for download yet.');
+      return;
+    }
+
+    try {
+      await downloadFromResponseLink(project.response_sheet_link, project.name);
+    } catch (error) {
+      console.error('Results download failed:', error);
     }
   };
 
@@ -164,7 +203,6 @@ const ProjectDetailsPage: React.FC = () => {
   };
 
   const renderStars = (rating: number) => {
-    const disabled = false; // Fix: Define disabled variable
     return (
       <div className="flex items-center space-x-1">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -219,6 +257,7 @@ const ProjectDetailsPage: React.FC = () => {
   const userHasSubmittedFeedback = existingFeedback.some(feedback => feedback.userId === user?.uuid);
   const isOngoing = (project.status || '').toUpperCase() === 'ONGOING';
   const isCompleted = (project.status || '').toUpperCase() === 'COMPLETED';
+  const hasDownloadLink = project.response_sheet_link && project.response_sheet_link.trim() !== '';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -289,33 +328,53 @@ const ProjectDetailsPage: React.FC = () => {
                 </Button>
               )}
               
-              {isCompleted && project.response_sheet_link && (
-                <a
-                  href={project.response_sheet_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium rounded-lg transition-colors duration-200 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  onClick={() => {
-                    setDownloading(true);
-                    setTimeout(() => setDownloading(false), 2000);
-                  }}
+              {/* Download Sheet Button */}
+              {hasDownloadLink && (
+                <DownloadButton
+                  isDownloading={isDownloading}
+                  progress={progress}
+                  error={downloadError}
+                  onDownload={handleDownloadSheet}
+                  size="lg"
+                  className="w-full sm:w-auto"
                 >
-                  {downloading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                      Downloading...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                      Download Results
-                    </>
-                  )}
-                </a>
+                  Download Sheet
+                </DownloadButton>
+              )}
+              
+              {/* Download Results Button */}
+              {isCompleted && hasDownloadLink && (
+                <DownloadButton
+                  isDownloading={isDownloading}
+                  progress={progress}
+                  error={downloadError}
+                  onDownload={handleDownloadResults}
+                  size="lg"
+                  className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  Download Results
+                </DownloadButton>
               )}
             </div>
           </div>
         </div>
+
+        {/* Download Status Alert */}
+        {!hasDownloadLink && isCompleted && (
+          <div className="mb-6">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0" />
+                <div>
+                  <p className="text-yellow-800 font-medium">Download Not Available</p>
+                  <p className="text-yellow-700 text-sm">
+                    The download link is not yet available for this project. Please check back later or contact support.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="mb-6">
@@ -492,6 +551,17 @@ const ProjectDetailsPage: React.FC = () => {
                     <div>
                       <p className="text-sm font-medium text-gray-900">Batch Duration</p>
                       <p className="text-sm text-gray-600">{project.batch_duration_days} days</p>
+                    </div>
+                  </div>
+
+                  {/* Download Link Status */}
+                  <div className="flex items-center space-x-3">
+                    <Download className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Download Status</p>
+                      <p className={`text-sm ${hasDownloadLink ? 'text-green-600' : 'text-gray-500'}`}>
+                        {hasDownloadLink ? 'Available' : 'Not Available'}
+                      </p>
                     </div>
                   </div>
                 </div>
