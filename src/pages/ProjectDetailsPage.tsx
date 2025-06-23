@@ -116,8 +116,9 @@ const ProjectDetailsPage: React.FC = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status.toUpperCase()) {
+  const getStatusIcon = (status: string | null | undefined) => {
+    const statusUpper = (status || '').toUpperCase();
+    switch (statusUpper) {
       case 'COMPLETED':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
       case 'ONGOING':
@@ -129,8 +130,9 @@ const ProjectDetailsPage: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
+  const getStatusColor = (status: string | null | undefined) => {
+    const statusUpper = (status || '').toUpperCase();
+    switch (statusUpper) {
       case 'COMPLETED':
         return 'green';
       case 'ONGOING':
@@ -210,8 +212,8 @@ const ProjectDetailsPage: React.FC = () => {
   }
 
   const userHasSubmittedFeedback = existingFeedback.some(feedback => feedback.userId === user?.uuid);
-  const isOngoing = project.status.toUpperCase() === 'ONGOING';
-  const isCompleted = project.status.toUpperCase() === 'COMPLETED';
+  const isOngoing = (project.status || '').toUpperCase() === 'ONGOING';
+  const isCompleted = (project.status || '').toUpperCase() === 'COMPLETED';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -235,7 +237,7 @@ const ProjectDetailsPage: React.FC = () => {
               <div className="flex items-center space-x-3">
                 {getStatusIcon(project.status)}
                 <span className="text-sm sm:text-base font-medium text-gray-600">
-                  {project.status.toUpperCase()}
+                  {(project.status || 'UNKNOWN').toUpperCase()}
                 </span>
                 {isOngoing && (
                   <span className="text-sm text-gray-500">
