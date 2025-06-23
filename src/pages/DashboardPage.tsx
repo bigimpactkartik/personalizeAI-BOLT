@@ -87,7 +87,8 @@ const DashboardPage: React.FC = () => {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status.toUpperCase()) {
+    const statusUpper = (status || '').toUpperCase();
+    switch (statusUpper) {
       case 'COMPLETED':
         return <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />;
       case 'ONGOING':
@@ -100,7 +101,7 @@ const DashboardPage: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusUpper = status.toUpperCase();
+    const statusUpper = (status || '').toUpperCase();
     const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
     
     switch (statusUpper) {
@@ -184,19 +185,19 @@ const DashboardPage: React.FC = () => {
           </Card>
           <Card className="text-center p-4 sm:p-6">
             <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-              {projects.filter(p => p.status.toUpperCase() === 'COMPLETED').length}
+              {projects.filter(p => (p.status || '').toUpperCase() === 'COMPLETED').length}
             </div>
             <div className="text-xs sm:text-sm text-gray-600">Completed</div>
           </Card>
           <Card className="text-center p-4 sm:p-6">
             <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">
-              {projects.filter(p => p.status.toUpperCase() === 'ONGOING').length}
+              {projects.filter(p => (p.status || '').toUpperCase() === 'ONGOING').length}
             </div>
             <div className="text-xs sm:text-sm text-gray-600">Ongoing</div>
           </Card>
           <Card className="text-center p-4 sm:p-6">
             <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-              {projects.filter(p => p.status.toUpperCase() === 'FAILED').length}
+              {projects.filter(p => (p.status || '').toUpperCase() === 'FAILED').length}
             </div>
             <div className="text-xs sm:text-sm text-gray-600">Failed</div>
           </Card>
@@ -250,7 +251,7 @@ const DashboardPage: React.FC = () => {
                           {project.name}
                         </h3>
                         <span className={getStatusBadge(project.status)}>
-                          {project.status.toUpperCase()}
+                          {(project.status || '').toUpperCase()}
                         </span>
                       </div>
                       
@@ -263,11 +264,11 @@ const DashboardPage: React.FC = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
                         <div className="flex items-center space-x-1">
                           {getStatusIcon(project.status)}
-                          <span>Status: {project.status}</span>
+                          <span>Status: {project.status || 'Unknown'}</span>
                         </div>
                         <span>Mailboxes: {project.no_of_mailbox}</span>
                         <span>Emails/Mailbox: {project.emails_per_mailbox}</span>
-                        {project.status.toUpperCase() === 'ONGOING' && (
+                        {(project.status || '').toUpperCase() === 'ONGOING' && (
                           <div className="flex items-center space-x-2">
                             <span>Progress: {getProgressPercentage(project)}%</span>
                             <span>({project.row_completed}/{project.total_row})</span>
@@ -277,7 +278,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
-                      {project.status.toUpperCase() === 'COMPLETED' && (
+                      {(project.status || '').toUpperCase() === 'COMPLETED' && (
                         <Button 
                           variant="outline" 
                           size="sm" 

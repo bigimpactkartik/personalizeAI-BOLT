@@ -122,7 +122,14 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     try {
       setLoading(true);
       setError(null);
-      const fetchedProjects = await projectService.getProjects(user.uuid);
+      
+      // First, get all project IDs for the user
+      const projectIds = await projectService.getUserProjects(user.uuid);
+      
+      // Then fetch detailed information for each project
+      const projectPromises = projectIds.map(id => projectService.getProjectById(id));
+      const fetchedProjects = await Promise.all(projectPromises);
+      
       setProjects(fetchedProjects);
     } catch (err: any) {
       console.error('Error fetching projects:', err);
@@ -190,7 +197,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   const getProject = async (id: string): Promise<Project | null> => {
     try {
       setError(null);
-      return await projectService.getProject(id);
+      return await projectService.getProjectById(id);
     } catch (err: any) {
       console.error('Error fetching project:', err);
       setError(err.message || 'Failed to fetch project');
