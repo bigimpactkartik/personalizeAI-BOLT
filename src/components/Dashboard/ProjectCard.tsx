@@ -34,7 +34,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [animatedLogs, setAnimatedLogs] = useState<Set<number>>(new Set());
-  const [previousLogCount, setPreviousLogCount] = useState(project.logs.length);
+  const [previousLogCount, setPreviousLogCount] = useState(project.logs?.length ?? 0);
 
   useEffect(() => {
     // Start polling if project is ongoing
@@ -49,20 +49,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   useEffect(() => {
     // Animate only new log entries
-    if (project.logs.length > previousLogCount) {
+    const currentLogCount = project.logs?.length ?? 0;
+    if (currentLogCount > previousLogCount) {
       const newLogIndices = new Set<number>();
-      for (let i = previousLogCount; i < project.logs.length; i++) {
+      for (let i = previousLogCount; i < currentLogCount; i++) {
         newLogIndices.add(i);
       }
       setAnimatedLogs(newLogIndices);
-      setPreviousLogCount(project.logs.length);
+      setPreviousLogCount(currentLogCount);
 
       // Remove animation class after animation completes
       setTimeout(() => {
         setAnimatedLogs(new Set());
       }, 500);
     }
-  }, [project.logs.length, previousLogCount]);
+  }, [project.logs?.length, previousLogCount]);
 
   const startPolling = () => {
     if (isPolling) return;
@@ -290,7 +291,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
 
           {/* Logs Section */}
-          {project.logs.length > 0 && (
+          {project.logs && project.logs.length > 0 && (
             <div className="space-y-3">
               <h4 className="text-sm font-medium text-gray-900">Activity Logs</h4>
               <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-2">
