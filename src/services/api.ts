@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-const API_BASE_URL = 'https://bip-pai.onrender.com';
+const API_BASE_URL = 'https://personalize-ai-v1.onrender.com';
 
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
