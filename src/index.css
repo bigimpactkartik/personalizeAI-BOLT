@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Custom Properties for Dynamic Color Usage */
+:root {
+  /* Primary Brand Colors */
+  --color-primary: 14 165 233;
+  --color-primary-hover: 2 132 199;
+  --color-primary-active: 3 105 161;
+  
+  /* Secondary Colors */
+  --color-secondary: 168 85 247;
+  --color-secondary-hover: 147 51 234;
+  --color-secondary-active: 124 58 237;
+  
+  /* Accent Colors */
+  --color-accent: 20 184 166;
+  --color-accent-hover: 13 148 136;
+  --color-accent-active: 15 118 110;
+  
+  /* State Colors */
+  --color-success: 34 197 94;
+  --color-warning: 245 158 11;
+  --color-error: 239 68 68;
+  
+  /* AI Brand Colors */
+  --color-ai-electric: 0 212 255;
+  --color-ai-neural: 99 102 241;
+  --color-ai-quantum: 139 92 246;
+  --color-ai-cyber: 6 182 212;
+  --color-ai-matrix: 16 185 129;
+  --color-ai-pulse: 245 158 11;
+}
+
+/* Dark mode color adjustments */
+.dark {
+  --color-primary: 56 189 248;
+  --color-primary-hover: 14 165 233;
+  --color-primary-active: 2 132 199;
+}
+
 /* Page transition animations */
 @layer utilities {
   .page-transition {
@@ -62,9 +100,70 @@
     }
   }
 
+  /* AI-specific animations */
+  .ai-pulse {
+    animation: pulseAI 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulseAI {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.02);
+    }
+  }
+
+  .ai-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
+    }
+    to {
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(0, 212, 255, 0.2);
+    }
+  }
+
+  .neural-network {
+    animation: neural 3s ease-in-out infinite;
+  }
+
+  @keyframes neural {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+  }
+
   /* Smooth transitions for interactive elements */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-ai {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* Glass morphism effects */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(15, 23, 42, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   /* Custom scrollbar */
@@ -73,17 +172,29 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: rgb(248 250 252);
     border-radius: 3px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: rgb(203 213 225);
     border-radius: 3px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: rgb(148 163 184);
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgb(15 23 42);
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(51 65 85);
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(71 85 105);
   }
 
   /* Collapsible animations */
@@ -125,6 +236,91 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Gradient text effects */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, rgb(14 165 233), rgb(168 85 247));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-ai {
+    background: linear-gradient(135deg, rgb(0 212 255), rgb(99 102 241), rgb(139 92 246));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Button hover states with brand colors */
+  .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700 focus:ring-primary-500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-500 text-white hover:bg-secondary-600 active:bg-secondary-700 focus:ring-secondary-500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-accent {
+    @apply bg-accent-500 text-white hover:bg-accent-600 active:bg-accent-700 focus:ring-accent-500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-ai {
+    background: linear-gradient(135deg, rgb(0 212 255), rgb(99 102 241));
+    @apply text-white hover:shadow-ai-glow;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-ai:hover {
+    background: linear-gradient(135deg, rgb(6 182 212), rgb(79 70 229));
+    transform: translateY(-1px);
+  }
+
+  /* Card styles with enhanced shadows */
+  .card-ai {
+    @apply bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-ai:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+  }
+
+  .card-ai-glow {
+    @apply card-ai;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 212, 255, 0.1);
+  }
+
+  .card-ai-glow:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 0 30px rgba(99, 102, 241, 0.2);
+  }
+
+  /* Status indicators with brand colors */
+  .status-success {
+    @apply bg-success-100 text-success-800 border-success-200;
+  }
+
+  .status-warning {
+    @apply bg-warning-100 text-warning-800 border-warning-200;
+  }
+
+  .status-error {
+    @apply bg-error-100 text-error-800 border-error-200;
+  }
+
+  .status-info {
+    @apply bg-primary-100 text-primary-800 border-primary-200;
+  }
+
+  .status-ai {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(99, 102, 241, 0.1));
+    @apply text-primary-800 border-primary-200;
+  }
 }
 
 /* Global smooth transitions */
@@ -132,12 +328,20 @@
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-/* Focus styles */
+/* Enhanced focus styles with brand colors */
 button:focus,
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid rgb(14 165 233);
+  outline-offset: 2px;
+}
+
+.dark button:focus,
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  outline: 2px solid rgb(56 189 248);
   outline-offset: 2px;
 }
 
@@ -149,16 +353,26 @@ textarea:focus {
   right: 0;
   bottom: 0;
   background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 }
 
+.dark .loading-overlay {
+  background: rgba(15, 23, 42, 0.8);
+}
+
 /* Enhanced hover effects */
 .hover-lift:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.hover-ai:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 212, 255, 0.15);
 }
 
 /* Smooth card transitions */
@@ -169,6 +383,11 @@ textarea:focus {
 .card-transition:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.card-ai-transition:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
 }
 
 /* Mobile-specific optimizations */
@@ -212,9 +431,14 @@ textarea:focus {
     left: 0;
     right: 0;
     background: white;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid rgb(229 231 235);
     padding: 0.5rem;
     z-index: 50;
+  }
+
+  .dark .mobile-nav {
+    background: rgb(15 23 42);
+    border-top: 1px solid rgb(51 65 85);
   }
 }
 
@@ -244,11 +468,11 @@ textarea:focus {
   @media (max-width: 640px) {
     /* Ensure good contrast in dark mode on mobile */
     .dark-mobile-text {
-      color: #f9fafb;
+      color: rgb(248 250 252);
     }
     
     .dark-mobile-bg {
-      background-color: #111827;
+      background-color: rgb(15 23 42);
     }
   }
 }
@@ -274,4 +498,26 @@ body {
 .scroll-lock {
   overflow: hidden;
   height: 100vh;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    border: 2px solid currentColor;
+  }
+  
+  .card-ai {
+    border: 2px solid currentColor;
+  }
 }
