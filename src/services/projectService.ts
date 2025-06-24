@@ -11,6 +11,11 @@ export interface ProjectCreateRequest {
   email_per_contact: number;
   batch_duration_days: number;
   
+  // API Keys - now included in project creation
+  openai_key?: string;
+  exa_api_key?: string;
+  ss_masters_key?: string;
+  
   // Required prompts
   custom_prompt_for_exa_company_information_extraction: string;
   icebreaker_personalized_system_prompt: string;
@@ -115,9 +120,7 @@ export interface StartProjectRequest {
   project_id: string;
   original_sheet_url: string;
   proceed_on_invalid_email: boolean;
-  openai_key: string;
-  ss_masters_key: string;
-  exa_api_key: string;
+  // API keys removed - backend should retrieve them from secure storage
 }
 
 export interface StartProjectResponse {
@@ -160,19 +163,14 @@ class ProjectService {
 
   async startProject(projectId: string, projectData: {
     googleSheetLink: string;
-    openaiKey: string;
-    exaKey: string;
-    ssmKey: string;
     processValidEmails: boolean;
   }): Promise<StartProjectResponse> {
     try {
       const requestData: StartProjectRequest = {
         project_id: projectId,
         original_sheet_url: projectData.googleSheetLink,
-        proceed_on_invalid_email: !projectData.processValidEmails,
-        openai_key: projectData.openaiKey,
-        ss_masters_key: projectData.ssmKey,
-        exa_api_key: projectData.exaKey
+        proceed_on_invalid_email: !projectData.processValidEmails
+        // API keys removed - backend should retrieve them from secure storage
       };
 
       const response = await apiClient.post('/personalized-sheet', requestData);
@@ -247,6 +245,11 @@ class ProjectService {
       emails_per_mailbox: formData.emailCapacity.emailsPerMailbox,
       email_per_contact: formData.emailCapacity.emailsPerContact,
       batch_duration_days: formData.emailCapacity.batchDuration,
+      
+      // API Keys - now included in project creation
+      openai_key: formData.aiModel.openaiKey?.trim(),
+      exa_api_key: formData.aiModel.exaKey?.trim(),
+      ss_masters_key: formData.aiModel.ssmKey?.trim(),
       
       // Required prompts
       custom_prompt_for_exa_company_information_extraction: formData.prompts.customPromptForExaCompanyInformationExtraction,
@@ -327,6 +330,17 @@ class ProjectService {
     multipartFormData.append('user_id', userId);
     if (formData.description) {
       multipartFormData.append('description', formData.description);
+    }
+    
+    // Add API Keys
+    if (formData.aiModel.openaiKey?.trim()) {
+      multipartFormData.append('openai_key', formData.aiModel.openaiKey.trim());
+    }
+    if (formData.aiModel.exaKey?.trim()) {
+      multipartFormData.append('exa_api_key', formData.aiModel.exaKey.trim());
+    }
+    if (formData.aiModel.ssmKey?.trim()) {
+      multipartFormData.append('ss_masters_key', formData.aiModel.ssmKey.trim());
     }
     
     // Add email capacity settings

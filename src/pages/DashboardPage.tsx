@@ -67,13 +67,9 @@ const DashboardPage: React.FC = () => {
         throw new Error('No Google Sheet link found for this project. Please ensure the project was created with a valid Google Sheet.');
       }
 
-      // For now, we'll use placeholder API keys since we don't store them
-      // In a real implementation, these would be retrieved from secure storage
+      // Simplified project data - API keys are now handled by the backend
       const projectData = {
         googleSheetLink: project.sheet_link,
-        openaiKey: 'placeholder_openai_key', // This should come from secure storage
-        exaKey: 'placeholder_exa_key', // This should come from secure storage
-        ssmKey: 'placeholder_ssm_key', // This should come from secure storage
         processValidEmails: true // Default to processing only valid emails
       };
 
