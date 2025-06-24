@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare, Eye } from 'lucide-react';
+import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare, Eye, Play } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { PlatformFeedbackFormData } from '../types/feedback';
 import projectService, { ProjectResponse } from '../services/projectService';
@@ -18,6 +18,7 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [downloadingProjects, setDownloadingProjects] = useState<Set<string>>(new Set());
+  const [startingProjects, setStartingProjects] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user?.uuid) {
@@ -46,6 +47,29 @@ const DashboardPage: React.FC = () => {
       console.error('Error fetching projects:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStartProject = async (projectId: string) => {
+    try {
+      setStartingProjects(prev => new Set(prev).add(projectId));
+      
+      // Here you would call an API endpoint to start the project processing
+      // For now, we'll simulate the API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Refresh the projects list to get updated status
+      await fetchUserProjects();
+      
+    } catch (error: any) {
+      console.error('Failed to start project:', error);
+      alert('Failed to start project. Please try again.');
+    } finally {
+      setStartingProjects(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(projectId);
+        return newSet;
+      });
     }
   };
 
@@ -148,6 +172,11 @@ const DashboardPage: React.FC = () => {
   const getProgressPercentage = (project: ProjectResponse) => {
     if (project.total_row === 0) return 0;
     return Math.round((project.row_completed / project.total_row) * 100);
+  };
+
+  const isReadyToProcess = (status: string) => {
+    const statusUpper = (status || '').toUpperCase();
+    return statusUpper === '' || statusUpper === 'READY TO PROCESS' || statusUpper === 'PENDING';
   };
 
   if (loading) {
@@ -291,7 +320,30 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-shrink-0">
+                      {/* START button for READY TO PROCESS projects */}
+                      {isReadyToProcess(project.status) && (
+                        <Button
+                          onClick={() => handleStartProject(project.id)}
+                          disabled={startingProjects.has(project.id)}
+                          className="w-full sm:w-auto bg-gradient-to-r from-success-600 to-success-700 hover:from-success-700 hover:to-success-800 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                          size="sm"
+                        >
+                          {startingProjects.has(project.id) ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Starting...
+                            </>
+                          ) : (
+                            <>
+                              <Play className="mr-2 h-4 w-4" />
+                              START
+                            </>
+                          )}
+                        </Button>
+                      )}
+
+                      {/* Download button for completed projects */}
                       {(project.status || '').toUpperCase() === 'COMPLETED' && project.response_sheet_link && (
                         <a
                           href={project.response_sheet_link}
@@ -326,6 +378,8 @@ const DashboardPage: React.FC = () => {
                           )}
                         </a>
                       )}
+
+                      {/* View Details button - always present */}
                       <Link to={`/project/${project.id}`} className="w-full sm:w-auto">
                         <Button variant="ghost" size="sm" className="w-full sm:w-auto hover:bg-primary-50 hover:text-primary-700">
                           <Eye className="mr-2 h-4 w-4" />
