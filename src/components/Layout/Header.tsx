@@ -32,15 +32,15 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-300 sticky top-0 z-50">
+    <header className="bg-white/90 backdrop-blur-md shadow-lg border-b border-neural-200/50 transition-all duration-300 sticky top-0 z-50 neural-pattern">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2 group">
+          <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
-              <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 transition-all duration-300 group-hover:scale-110" />
-              <div className="absolute inset-0 bg-blue-600 dark:bg-blue-400 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
+              <Brain className="h-8 w-8 text-primary-600 transition-all duration-300 group-hover:scale-110 neural-glow" />
+              <div className="absolute inset-0 bg-primary-600 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
             </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+            <span className="text-xl font-bold ai-text-gradient transition-all duration-300">
               PERSONALIZED-AI
             </span>
           </Link>
@@ -53,22 +53,22 @@ const Header: React.FC = () => {
                   to="/dashboard"
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     location.pathname === '/dashboard'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 shadow-sm'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-lg ai-glow'
+                      : 'text-neural-700 hover:text-primary-600 hover:bg-neural-100/50 backdrop-blur-sm'
                   }`}
                 >
                   Dashboard
                 </Link>
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg transition-colors duration-300">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-neural-100/80 to-neural-200/80 backdrop-blur-sm rounded-lg border border-neural-300/50 transition-all duration-300 hover:shadow-md">
+                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center shadow-lg">
                       <User className="h-4 w-4 text-white" />
                     </div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{getUserDisplayName()}</span>
+                    <span className="text-sm text-neural-700 font-medium">{getUserDisplayName()}</span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300"
+                    className="flex items-center space-x-2 px-4 py-2 text-sm text-neural-700 hover:text-error-600 hover:bg-error-50 rounded-lg transition-all duration-300 border border-transparent hover:border-error-200"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
@@ -79,13 +79,13 @@ const Header: React.FC = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300"
+                  className="px-4 py-2 text-sm font-medium text-neural-700 hover:text-primary-600 hover:bg-neural-100/50 rounded-lg transition-all duration-300"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                  className="px-6 py-2 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white text-sm font-medium rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl ai-button-glow"
                 >
                   Get Started
                 </Link>
@@ -96,7 +96,7 @@ const Header: React.FC = () => {
           {/* Mobile menu button */}
           <button
             onClick={toggleMobileMenu}
-            className="md:hidden p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300"
+            className="md:hidden p-2 rounded-lg text-neural-700 hover:bg-neural-100/50 transition-all duration-300"
           >
             {isMobileMenuOpen ? (
               <X className="h-6 w-6" />
@@ -108,29 +108,29 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4 fade-in-up">
+          <div className="md:hidden border-t border-neural-200/50 py-4 fade-in-up bg-white/80 backdrop-blur-sm rounded-b-lg">
             {isAuthenticated ? (
               <div className="space-y-4">
-                <div className="flex items-center space-x-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-neural-100/80 to-neural-200/80 rounded-lg border border-neural-300/50">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center shadow-lg">
                     <User className="h-4 w-4 text-white" />
                   </div>
-                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{getUserDisplayName()}</span>
+                  <span className="text-sm text-neural-700 font-medium">{getUserDisplayName()}</span>
                 </div>
                 <Link
                   to="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
                     location.pathname === '/dashboard'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-lg'
+                      : 'text-neural-700 hover:text-primary-600 hover:bg-neural-100/50'
                   }`}
                 >
                   Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300"
+                  className="flex items-center space-x-2 w-full px-4 py-3 text-sm text-neural-700 hover:text-error-600 hover:bg-error-50 rounded-lg transition-all duration-300"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Logout</span>
@@ -141,14 +141,14 @@ const Header: React.FC = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300"
+                  className="block px-4 py-3 text-sm font-medium text-neural-700 hover:text-primary-600 hover:bg-neural-100/50 rounded-lg transition-all duration-300"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium rounded-lg transition-all duration-300 text-center"
+                  className="block px-4 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white text-sm font-medium rounded-lg transition-all duration-300 text-center shadow-lg"
                 >
                   Get Started
                 </Link>

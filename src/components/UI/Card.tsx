@@ -20,8 +20,8 @@ const Card: React.FC<CardProps> = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-      hover ? 'hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-blue-400/10 hover:-translate-y-1' : ''
+    <div className={`ai-card-gradient rounded-xl shadow-lg border border-neural-200/50 transition-all duration-300 neural-pattern ${
+      hover ? 'hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 card-transition' : ''
     } ${paddingClasses[padding]} ${className}`}>
       {children}
     </div>

@@ -90,29 +90,29 @@ const DashboardPage: React.FC = () => {
     const statusUpper = (status || '').toUpperCase();
     switch (statusUpper) {
       case 'COMPLETED':
-        return <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-success-600" />;
       case 'ONGOING':
-        return <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />;
+        return <Clock className="h-5 w-5 text-primary-600" />;
       case 'FAILED':
-        return <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />;
+        return <XCircle className="h-5 w-5 text-error-600" />;
       default:
-        return <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />;
+        return <AlertCircle className="h-5 w-5 text-warning-600" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     const statusUpper = (status || '').toUpperCase();
-    const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+    const baseClasses = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium";
     
     switch (statusUpper) {
       case 'COMPLETED':
-        return `${baseClasses} bg-green-100 text-green-800`;
+        return `${baseClasses} status-completed`;
       case 'ONGOING':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
+        return `${baseClasses} status-ongoing`;
       case 'FAILED':
-        return `${baseClasses} bg-red-100 text-red-800`;
+        return `${baseClasses} status-failed`;
       default:
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
+        return `${baseClasses} status-pending`;
     }
   };
 
@@ -152,10 +152,10 @@ const DashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen ai-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading your projects...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto mb-4 neural-glow" />
+          <p className="text-neural-600">Loading your projects...</p>
         </div>
       </div>
     );
@@ -163,11 +163,11 @@ const DashboardPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen ai-background flex items-center justify-center">
         <div className="text-center">
-          <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Projects</h1>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <XCircle className="h-12 w-12 text-error-600 mx-auto mb-4" />
+          <h1 className="text-xl font-semibold text-neural-900 mb-2">Error Loading Projects</h1>
+          <p className="text-neural-600 mb-4">{error}</p>
           <Button onClick={fetchUserProjects}>
             Try Again
           </Button>
@@ -177,52 +177,52 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="min-h-screen ai-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {getUserDisplayName()}!
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-neural-900 mb-2">
+            Welcome back, <span className="ai-text-gradient">{getUserDisplayName()}</span>!
           </h1>
-          <p className="text-sm sm:text-base text-gray-600">
+          <p className="text-neural-600">
             Manage your cold email campaigns and track their performance
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <Card className="text-center p-4 sm:p-6">
-            <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="text-center p-6 neural-glow" hover>
+            <div className="text-2xl font-bold ai-text-gradient mb-1">
               {projects.length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Total Projects</div>
+            <div className="text-sm text-neural-600">Total Projects</div>
           </Card>
-          <Card className="text-center p-4 sm:p-6">
-            <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
+          <Card className="text-center p-6 neural-glow" hover>
+            <div className="text-2xl font-bold text-success-600 mb-1">
               {projects.filter(p => (p.status || '').toUpperCase() === 'COMPLETED').length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Completed</div>
+            <div className="text-sm text-neural-600">Completed</div>
           </Card>
-          <Card className="text-center p-4 sm:p-6">
-            <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">
+          <Card className="text-center p-6 neural-glow" hover>
+            <div className="text-2xl font-bold text-primary-600 mb-1">
               {projects.filter(p => (p.status || '').toUpperCase() === 'ONGOING').length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Ongoing</div>
+            <div className="text-sm text-neural-600">Ongoing</div>
           </Card>
-          <Card className="text-center p-4 sm:p-6">
-            <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
+          <Card className="text-center p-6 neural-glow" hover>
+            <div className="text-2xl font-bold text-error-600 mb-1">
               {projects.filter(p => (p.status || '').toUpperCase() === 'FAILED').length}
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">Failed</div>
+            <div className="text-sm text-neural-600">Failed</div>
           </Card>
         </div>
 
         {/* Action Buttons */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-8">
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
             <Link to="/create-project" className="flex-1 sm:flex-none">
-              <Button size="lg" className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              <Button size="lg" className="w-full sm:w-auto shadow-xl">
+                <Plus className="mr-2 h-5 w-5" />
                 Create New Project
               </Button>
             </Link>
@@ -231,37 +231,37 @@ const DashboardPage: React.FC = () => {
               variant="outline" 
               size="lg" 
               onClick={() => setShowFeedbackModal(true)}
-              className="w-full sm:w-auto border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+              className="w-full sm:w-auto border-primary-300 text-primary-700 hover:bg-primary-50 hover:border-primary-400 transition-all duration-300"
             >
-              <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              <MessageSquare className="mr-2 h-5 w-5" />
               Feedback
             </Button>
           </div>
         </div>
 
         {/* Projects List */}
-        <div className="space-y-4 sm:space-y-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Your Projects</h2>
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-neural-900">Your Projects</h2>
           
           {projects.length === 0 ? (
-            <Card className="text-center py-8 sm:py-12 p-4 sm:p-6">
-              <div className="text-gray-500 mb-4">
-                <Plus className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-300" />
-                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
-                <p className="text-sm sm:text-base text-gray-600 px-4">Create your first project to get started with AI-powered cold emails</p>
+            <Card className="text-center py-12 p-6 neural-pattern">
+              <div className="text-neural-500 mb-4">
+                <Plus className="h-12 w-12 mx-auto mb-4 text-neural-300" />
+                <h3 className="text-lg font-medium text-neural-900 mb-2">No projects yet</h3>
+                <p className="text-neural-600 px-4">Create your first project to get started with AI-powered cold emails</p>
               </div>
               <Link to="/create-project" className="inline-block">
-                <Button>Create Your First Project</Button>
+                <Button className="shadow-lg">Create Your First Project</Button>
               </Link>
             </Card>
           ) : (
-            <div className="grid gap-4 sm:gap-6">
+            <div className="grid gap-6">
               {projects.map((project) => (
-                <Card key={project.id} className="hover:shadow-md transition-shadow p-4 sm:p-6">
+                <Card key={project.id} className="hover:shadow-xl transition-all duration-300 p-6 neural-glow" hover>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                        <h3 className="text-lg font-semibold text-neural-900 truncate">
                           {project.name}
                         </h3>
                         <span className={getStatusBadge(project.status)}>
@@ -270,12 +270,12 @@ const DashboardPage: React.FC = () => {
                       </div>
                       
                       {project.description && (
-                        <p className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-2">
+                        <p className="text-neural-600 mb-3 line-clamp-2">
                           {project.description}
                         </p>
                       )}
                       
-                      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-neural-500">
                         <div className="flex items-center space-x-1">
                           {getStatusIcon(project.status)}
                           <span>Status: {getStatusText(project.status)}</span>
@@ -297,7 +297,7 @@ const DashboardPage: React.FC = () => {
                           href={project.response_sheet_link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 w-full sm:w-auto"
+                          className="inline-flex items-center justify-center px-4 py-2 border border-neural-300 text-sm font-medium rounded-lg text-neural-700 bg-white/70 hover:bg-neural-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 w-full sm:w-auto backdrop-blur-sm"
                           onClick={(e) => {
                             if (downloadingProjects.has(project.id)) {
                               e.preventDefault();
@@ -315,20 +315,20 @@ const DashboardPage: React.FC = () => {
                         >
                           {downloadingProjects.has(project.id) ? (
                             <>
-                              <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               Downloading...
                             </>
                           ) : (
                             <>
-                              <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                              <Download className="mr-2 h-4 w-4" />
                               Download Sheet
                             </>
                           )}
                         </a>
                       )}
                       <Link to={`/project/${project.id}`} className="w-full sm:w-auto">
-                        <Button variant="ghost" size="sm" className="w-full sm:w-auto">
-                          <Eye className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                        <Button variant="ghost" size="sm" className="w-full sm:w-auto hover:bg-primary-50 hover:text-primary-700">
+                          <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </Button>
                       </Link>

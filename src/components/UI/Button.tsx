@@ -17,13 +17,13 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105';
   
   const variantClasses = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm',
-    secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 shadow-sm',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
-    ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500'
+    primary: 'bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white focus:ring-primary-500 shadow-lg hover:shadow-xl ai-button-glow',
+    secondary: 'bg-gradient-to-r from-neural-100 to-neural-200 hover:from-neural-200 hover:to-neural-300 text-neural-700 focus:ring-neural-500 shadow-md hover:shadow-lg border border-neural-300',
+    outline: 'border-2 border-primary-300 text-primary-700 hover:bg-primary-50 hover:border-primary-400 focus:ring-primary-500 backdrop-blur-sm',
+    ghost: 'text-neural-700 hover:bg-neural-100/50 focus:ring-neural-500 backdrop-blur-sm'
   };
   
   const sizeClasses = {
@@ -37,7 +37,7 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
-        isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+        isDisabled ? 'opacity-50 cursor-not-allowed transform-none' : ''
       } ${className}`}
       disabled={isDisabled}
       {...props}
