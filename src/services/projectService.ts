@@ -7,28 +7,67 @@ export interface ProjectCreateRequest {
   description?: string;
   sheet_link?: string;
   no_of_mailbox: number;
-  response_sheet_link?: string;
   emails_per_mailbox: number;
   email_per_contact: number;
   batch_duration_days: number;
+  
+  // Required prompts
+  custom_prompt_for_exa_company_information_extraction: string;
+  icebreaker_personalized_system_prompt: string;
+  icebreaker_personalized_user_prompt: string;
+  
+  // Contact limits by company size
   contact_limit_very_small: number;
   contact_limit_small_company: number;
   contact_limit_medium_company: number;
   contact_limit_large_company: number;
   contact_limit_enterprise: number;
+  
+  // Company size thresholds
   company_size_very_small_max: number;
   company_size_small_max: number;
   company_size_medium_max: number;
   company_size_large_max: number;
   company_size_enterprise_min: number;
+  
+  // Primary target roles by company size
+  company_size_very_small_primary_target_roles: string[];
+  company_size_small_primary_target_roles: string[];
+  company_size_medium_primary_target_roles: string[];
+  company_size_large_primary_target_roles: string[];
+  company_size_enterprise_primary_target_roles: string[];
+  
+  // Secondary target roles by company size
+  company_size_very_small_secondary_target_roles: string[];
+  company_size_small_secondary_target_roles: string[];
+  company_size_medium_secondary_target_roles: string[];
+  company_size_large_secondary_target_roles: string[];
+  company_size_enterprise_secondary_target_roles: string[];
+  
+  // Exclusion roles by company size
+  company_size_very_small_exclusion_roles: string[];
+  company_size_small_exclusion_roles: string[];
+  company_size_medium_exclusion_roles: string[];
+  company_size_large_exclusion_roles: string[];
+  company_size_enterprise_exclusion_roles: string[];
+  
+  // Target departments by company size
+  company_size_very_small_target_departments: string[];
+  company_size_small_target_departments: string[];
+  company_size_medium_target_departments: string[];
+  company_size_large_target_departments: string[];
+  company_size_enterprise_target_departments: string[];
+  
+  // Exclusion departments by company size
+  company_size_very_small_exclusion_departments: string[];
+  company_size_small_exclusion_departments: string[];
+  company_size_medium_exclusion_departments: string[];
+  company_size_large_exclusion_departments: string[];
+  company_size_enterprise_exclusion_departments: string[];
+  
+  // Timing settings
   days_between_contacts: number;
   follow_up_cycle_days: number;
-  target_departments: string[];
-  excluded_departments: string[];
-  seniority_tier_1: string[];
-  seniority_tier_2: string[];
-  seniority_tier_3: string[];
-  seniority_excluded: string[];
 }
 
 export interface ProjectResponse {
@@ -125,56 +164,65 @@ class ProjectService {
       emails_per_mailbox: formData.emailCapacity.emailsPerMailbox,
       email_per_contact: formData.emailCapacity.emailsPerContact,
       batch_duration_days: formData.emailCapacity.batchDuration,
-      contact_limit_very_small: formData.companyTargeting[0]?.numberOfContacts || 2,
-      contact_limit_small_company: formData.companyTargeting[1]?.numberOfContacts || 3,
-      contact_limit_medium_company: formData.companyTargeting[2]?.numberOfContacts || 4,
-      contact_limit_large_company: formData.companyTargeting[3]?.numberOfContacts || 5,
-      contact_limit_enterprise: formData.companyTargeting[4]?.numberOfContacts || 6,
-      company_size_very_small_max: 10,
-      company_size_small_max: 50,
-      company_size_medium_max: 200,
-      company_size_large_max: 1000,
-      company_size_enterprise_min: 1001,
-      days_between_contacts: 3,
-      follow_up_cycle_days: 7,
-      target_departments: this.extractDepartments(formData.companyTargeting, 'target'),
-      excluded_departments: this.extractDepartments(formData.companyTargeting, 'excluded'),
-      seniority_tier_1: this.extractRoles(formData.companyTargeting, 'primary'),
-      seniority_tier_2: this.extractRoles(formData.companyTargeting, 'secondary'),
-      seniority_tier_3: [],
-      seniority_excluded: this.extractRoles(formData.companyTargeting, 'excluded')
+      
+      // Required prompts
+      custom_prompt_for_exa_company_information_extraction: formData.prompts.customPromptForExaCompanyInformationExtraction,
+      icebreaker_personalized_system_prompt: formData.prompts.icebreakerPersonalizedSystemPrompt,
+      icebreaker_personalized_user_prompt: formData.prompts.icebreakerPersonalizedUserPrompt,
+      
+      // Contact limits
+      contact_limit_very_small: formData.contactLimits.verySmall,
+      contact_limit_small_company: formData.contactLimits.smallCompany,
+      contact_limit_medium_company: formData.contactLimits.mediumCompany,
+      contact_limit_large_company: formData.contactLimits.largeCompany,
+      contact_limit_enterprise: formData.contactLimits.enterprise,
+      
+      // Company size thresholds
+      company_size_very_small_max: formData.companySizeLimits.verySmallMax,
+      company_size_small_max: formData.companySizeLimits.smallMax,
+      company_size_medium_max: formData.companySizeLimits.mediumMax,
+      company_size_large_max: formData.companySizeLimits.largeMax,
+      company_size_enterprise_min: formData.companySizeLimits.enterpriseMin,
+      
+      // Primary target roles by company size
+      company_size_very_small_primary_target_roles: formData.companyTargetingBySize.verySmall.primaryTargetRoles,
+      company_size_small_primary_target_roles: formData.companyTargetingBySize.small.primaryTargetRoles,
+      company_size_medium_primary_target_roles: formData.companyTargetingBySize.medium.primaryTargetRoles,
+      company_size_large_primary_target_roles: formData.companyTargetingBySize.large.primaryTargetRoles,
+      company_size_enterprise_primary_target_roles: formData.companyTargetingBySize.enterprise.primaryTargetRoles,
+      
+      // Secondary target roles by company size
+      company_size_very_small_secondary_target_roles: formData.companyTargetingBySize.verySmall.secondaryTargetRoles,
+      company_size_small_secondary_target_roles: formData.companyTargetingBySize.small.secondaryTargetRoles,
+      company_size_medium_secondary_target_roles: formData.companyTargetingBySize.medium.secondaryTargetRoles,
+      company_size_large_secondary_target_roles: formData.companyTargetingBySize.large.secondaryTargetRoles,
+      company_size_enterprise_secondary_target_roles: formData.companyTargetingBySize.enterprise.secondaryTargetRoles,
+      
+      // Exclusion roles by company size
+      company_size_very_small_exclusion_roles: formData.companyTargetingBySize.verySmall.exclusionRoles,
+      company_size_small_exclusion_roles: formData.companyTargetingBySize.small.exclusionRoles,
+      company_size_medium_exclusion_roles: formData.companyTargetingBySize.medium.exclusionRoles,
+      company_size_large_exclusion_roles: formData.companyTargetingBySize.large.exclusionRoles,
+      company_size_enterprise_exclusion_roles: formData.companyTargetingBySize.enterprise.exclusionRoles,
+      
+      // Target departments by company size
+      company_size_very_small_target_departments: formData.companyTargetingBySize.verySmall.targetDepartments,
+      company_size_small_target_departments: formData.companyTargetingBySize.small.targetDepartments,
+      company_size_medium_target_departments: formData.companyTargetingBySize.medium.targetDepartments,
+      company_size_large_target_departments: formData.companyTargetingBySize.large.targetDepartments,
+      company_size_enterprise_target_departments: formData.companyTargetingBySize.enterprise.targetDepartments,
+      
+      // Exclusion departments by company size
+      company_size_very_small_exclusion_departments: formData.companyTargetingBySize.verySmall.exclusionDepartments,
+      company_size_small_exclusion_departments: formData.companyTargetingBySize.small.exclusionDepartments,
+      company_size_medium_exclusion_departments: formData.companyTargetingBySize.medium.exclusionDepartments,
+      company_size_large_exclusion_departments: formData.companyTargetingBySize.large.exclusionDepartments,
+      company_size_enterprise_exclusion_departments: formData.companyTargetingBySize.enterprise.exclusionDepartments,
+      
+      // Timing settings
+      days_between_contacts: formData.timingSettings.daysBetweenContacts,
+      follow_up_cycle_days: formData.timingSettings.followUpCycleDays
     };
-  }
-
-  private extractDepartments(targeting: any[], type: 'target' | 'excluded'): string[] {
-    const departments = targeting
-      .map(t => type === 'target' ? t.targetDepartments : t.exclusionDepartments)
-      .filter(Boolean)
-      .join(',')
-      .split(',')
-      .map(d => d.trim())
-      .filter(Boolean);
-    
-    return [...new Set(departments)];
-  }
-
-  private extractRoles(targeting: any[], type: 'primary' | 'secondary' | 'excluded'): string[] {
-    const roles = targeting
-      .map(t => {
-        switch (type) {
-          case 'primary': return t.primaryTargetRoles;
-          case 'secondary': return t.secondaryTargetRoles;
-          case 'excluded': return t.exclusionRoles;
-          default: return '';
-        }
-      })
-      .filter(Boolean)
-      .join(',')
-      .split(',')
-      .map(r => r.trim())
-      .filter(Boolean);
-    
-    return [...new Set(roles)];
   }
 }
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, FileText, Upload, Settings, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { ProjectFormData, CompanyTargetingSettings } from '../types';
+import { ProjectFormData, CompanySizeTargeting } from '../types';
 import projectService from '../services/projectService';
 import Button from '../components/UI/Button';
 import StepIndicator from '../components/UI/StepIndicator';
@@ -33,11 +33,29 @@ const CreateProjectPage: React.FC = () => {
     aiModel: {
       provider: 'openai-gpt4'
     },
-    companyTargeting: getDefaultCompanyTargeting(),
-    advancedSettings: {
-      exaPrompt: '',
-      icebreakerSystemPrompt: '',
-      icebreakerUserPrompt: ''
+    prompts: {
+      customPromptForExaCompanyInformationExtraction: 'Extract comprehensive company information including industry, size, recent news, and key decision makers from the provided data.',
+      icebreakerPersonalizedSystemPrompt: 'You are an expert at creating personalized icebreakers for cold emails. Use the provided company and contact information to create engaging, relevant opening lines.',
+      icebreakerPersonalizedUserPrompt: 'Create a personalized icebreaker for this contact based on their role, company, and any available information about recent company developments or achievements.'
+    },
+    companySizeLimits: {
+      verySmallMax: 10,
+      smallMax: 50,
+      mediumMax: 200,
+      largeMax: 1000,
+      enterpriseMin: 1001
+    },
+    contactLimits: {
+      verySmall: 2,
+      smallCompany: 4,
+      mediumCompany: 8,
+      largeCompany: 10,
+      enterprise: 0
+    },
+    companyTargetingBySize: getDefaultCompanyTargeting(),
+    timingSettings: {
+      daysBetweenContacts: 3,
+      followUpCycleDays: 7
     }
   });
 
@@ -47,54 +65,50 @@ const CreateProjectPage: React.FC = () => {
     'Settings'
   ];
 
-  function getDefaultCompanyTargeting(): CompanyTargetingSettings[] {
-    return [
-      {
-        companySize: '1-10',
-        numberOfContacts: 2,
-        primaryTargetRoles: 'CEO, Founder',
-        secondaryTargetRoles: 'Owner, Director',
-        exclusionRoles: '',
-        targetDepartments: '',
-        exclusionDepartments: ''
+  function getDefaultCompanyTargeting(): {
+    verySmall: CompanySizeTargeting;
+    small: CompanySizeTargeting;
+    medium: CompanySizeTargeting;
+    large: CompanySizeTargeting;
+    enterprise: CompanySizeTargeting;
+  } {
+    return {
+      verySmall: {
+        primaryTargetRoles: [],
+        secondaryTargetRoles: [],
+        exclusionRoles: [],
+        targetDepartments: ['All'],
+        exclusionDepartments: ['None']
       },
-      {
-        companySize: '11-50',
-        numberOfContacts: 3,
-        primaryTargetRoles: 'CEO, Founder, Co-Founder',
-        secondaryTargetRoles: 'Director, Head of',
-        exclusionRoles: '',
-        targetDepartments: '',
-        exclusionDepartments: ''
+      small: {
+        primaryTargetRoles: ['CEO', 'Founder', 'Co-Founder', 'Owner'],
+        secondaryTargetRoles: ['Director', 'Head of', 'VP'],
+        exclusionRoles: ['Intern', 'Assistant'],
+        targetDepartments: ['All'],
+        exclusionDepartments: ['None']
       },
-      {
-        companySize: '51-200',
-        numberOfContacts: 4,
-        primaryTargetRoles: 'CEO, Founder, Co-Founder, VP',
-        secondaryTargetRoles: 'Director, Head of, Senior Manager',
-        exclusionRoles: '',
-        targetDepartments: '',
-        exclusionDepartments: ''
+      medium: {
+        primaryTargetRoles: ['Director', 'VP', 'Head of'],
+        secondaryTargetRoles: ['Senior Manager', 'Manager'],
+        exclusionRoles: ['CEO', 'Founder', 'Analyst'],
+        targetDepartments: ['Sales', 'Marketing', 'Operations', 'Growth'],
+        exclusionDepartments: ['HR', 'Legal', 'Finance', 'Accounting']
       },
-      {
-        companySize: '201-1000',
-        numberOfContacts: 5,
-        primaryTargetRoles: 'Director, VP, Head of',
-        secondaryTargetRoles: 'Senior Manager, Manager',
-        exclusionRoles: '',
-        targetDepartments: '',
-        exclusionDepartments: ''
+      large: {
+        primaryTargetRoles: ['Director', 'Head of', 'Senior Director'],
+        secondaryTargetRoles: ['VP', 'Senior Manager'],
+        exclusionRoles: ['CEO', 'President', 'Analyst'],
+        targetDepartments: ['Sales', 'Marketing', 'Operations', 'Growth'],
+        exclusionDepartments: ['HR', 'Legal', 'Finance', 'Accounting']
       },
-      {
-        companySize: '1000+',
-        numberOfContacts: 6,
-        primaryTargetRoles: 'Senior Manager, Director, Head of',
-        secondaryTargetRoles: 'Manager, Senior Director',
-        exclusionRoles: '',
-        targetDepartments: '',
-        exclusionDepartments: ''
+      enterprise: {
+        primaryTargetRoles: ['ABM Territory'],
+        secondaryTargetRoles: ['Contact for ABM strategy'],
+        exclusionRoles: ['All'],
+        targetDepartments: ['All'],
+        exclusionDepartments: ['N/A']
       }
-    ];
+    };
   }
 
   const validateFormData = (): string[] => {
@@ -131,6 +145,17 @@ const CreateProjectPage: React.FC = () => {
     }
     if (formData.emailCapacity.emailsPerContact < 1) {
       errors.push('At least 1 email per contact is required');
+    }
+
+    // Validate required prompts
+    if (!formData.prompts.customPromptForExaCompanyInformationExtraction.trim()) {
+      errors.push('Custom prompt for EXA company information extraction is required');
+    }
+    if (!formData.prompts.icebreakerPersonalizedSystemPrompt.trim()) {
+      errors.push('Icebreaker system prompt is required');
+    }
+    if (!formData.prompts.icebreakerPersonalizedUserPrompt.trim()) {
+      errors.push('Icebreaker user prompt is required');
     }
 
     return errors;

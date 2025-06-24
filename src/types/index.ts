@@ -79,12 +79,54 @@ export interface ProjectFormData {
     claudeKey?: string;
     ssmKey?: string;
   };
-  companyTargeting: CompanyTargetingSettings[];
-  advancedSettings?: {
-    exaPrompt?: string;
-    icebreakerSystemPrompt?: string;
-    icebreakerUserPrompt?: string;
+  
+  // Updated to match backend schema exactly
+  prompts: {
+    customPromptForExaCompanyInformationExtraction: string;
+    icebreakerPersonalizedSystemPrompt: string;
+    icebreakerPersonalizedUserPrompt: string;
   };
+  
+  // Company size limits (backend required fields)
+  companySizeLimits: {
+    verySmallMax: number;
+    smallMax: number;
+    mediumMax: number;
+    largeMax: number;
+    enterpriseMin: number;
+  };
+  
+  // Contact limits per company size
+  contactLimits: {
+    verySmall: number;
+    smallCompany: number;
+    mediumCompany: number;
+    largeCompany: number;
+    enterprise: number;
+  };
+  
+  // Detailed targeting by company size
+  companyTargetingBySize: {
+    verySmall: CompanySizeTargeting;
+    small: CompanySizeTargeting;
+    medium: CompanySizeTargeting;
+    large: CompanySizeTargeting;
+    enterprise: CompanySizeTargeting;
+  };
+  
+  // Timing settings
+  timingSettings: {
+    daysBetweenContacts: number;
+    followUpCycleDays: number;
+  };
+}
+
+export interface CompanySizeTargeting {
+  primaryTargetRoles: string[];
+  secondaryTargetRoles: string[];
+  exclusionRoles: string[];
+  targetDepartments: string[];
+  exclusionDepartments: string[];
 }
 
 export interface CompanyTargetingSettings {
