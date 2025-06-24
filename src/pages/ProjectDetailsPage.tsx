@@ -18,8 +18,7 @@ import {
   Calendar,
   User,
   MessageSquare,
-  Star,
-  RefreshCw
+  Star
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjectPolling } from '../hooks/useProjectPolling';
@@ -44,7 +43,7 @@ const ProjectDetailsPage: React.FC = () => {
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   // Use polling hook for real-time updates
-  const { project, loading, error, newLogs, refetch } = useProjectPolling({
+  const { project, loading, error, newLogs } = useProjectPolling({
     projectId: id || '',
     enabled: !!id,
     interval: 60000 // 60 seconds
@@ -99,22 +98,6 @@ const ProjectDetailsPage: React.FC = () => {
       console.error('Error loading feedback:', error);
     } finally {
       setLoadingFeedback(false);
-    }
-  };
-
-  const handleDownloadSheet = async () => {
-    if (!project) return;
-
-    try {
-      if (project.response_sheet_link) {
-        // Use response sheet link if available
-        await downloadFromResponseLink(project.response_sheet_link, project.name);
-      } else {
-        // Fallback to API endpoint
-        await downloadProjectSheet(project.id, project.name);
-      }
-    } catch (error) {
-      console.error('Download initiation failed:', error);
     }
   };
 
@@ -240,15 +223,9 @@ const ProjectDetailsPage: React.FC = () => {
           <p className="text-gray-600 mb-4">
             {error || "The project you're looking for doesn't exist."}
           </p>
-          <div className="space-x-4">
-            <Button onClick={refetch} variant="outline">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Retry
-            </Button>
-            <Link to="/dashboard">
-              <Button>Back to Dashboard</Button>
-            </Link>
-          </div>
+          <Link to="/dashboard">
+            <Button>Back to Dashboard</Button>
+          </Link>
         </div>
       </div>
     );
@@ -274,45 +251,31 @@ const ProjectDetailsPage: React.FC = () => {
           </Button>
           
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                {project.name}
-              </h1>
-              <div className="flex items-center space-x-3">
-                {getStatusIcon(project.status)}
-                <span className="text-sm sm:text-base font-medium text-gray-600">
-                  {getStatusText(project.status)}
-                </span>
-                {isOngoing && (
-                  <span className="text-sm text-gray-500">
-                    {getProgressPercentage()}% complete ({project.row_completed}/{project.total_row})
+            <div className="flex items-center space-x-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                  {project.name}
+                </h1>
+                <div className="flex items-center space-x-3">
+                  {getStatusIcon(project.status)}
+                  <span className="text-sm sm:text-base font-medium text-gray-600">
+                    {getStatusText(project.status)}
                   </span>
-                )}
-                {isOngoing && (
-                  <div className="flex items-center space-x-2 text-sm text-blue-600">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Auto-updating every 60s</span>
-                  </div>
-                )}
+                  {isOngoing && (
+                    <span className="text-sm text-gray-500">
+                      {getProgressPercentage()}% complete ({project.row_completed}/{project.total_row})
+                    </span>
+                  )}
+                  {isOngoing && (
+                    <div className="flex items-center space-x-2 text-sm text-blue-600">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Auto-updating every 60s</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-              <Button
-                onClick={refetch}
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                Refresh
-              </Button>
               
+              {/* Single Feedback Button next to project name */}
               {isCompleted && !userHasSubmittedFeedback && (
                 <Button
                   onClick={() => {
@@ -320,29 +283,17 @@ const ProjectDetailsPage: React.FC = () => {
                     setShowFeedbackForm(true);
                   }}
                   variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
+                  size="sm"
+                  className="flex-shrink-0"
                 >
-                  <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Submit Feedback
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Feedback
                 </Button>
               )}
-              
-              {/* Download Sheet Button */}
-              {hasDownloadLink && (
-                <DownloadButton
-                  isDownloading={isDownloading}
-                  progress={progress}
-                  error={downloadError}
-                  onDownload={handleDownloadSheet}
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  Download Sheet
-                </DownloadButton>
-              )}
-              
-              {/* Download Results Button */}
+            </div>
+            
+            {/* Only Download Results Button */}
+            <div className="flex justify-end">
               {isCompleted && hasDownloadLink && (
                 <DownloadButton
                   isDownloading={isDownloading}

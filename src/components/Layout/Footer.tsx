@@ -1,5 +1,5 @@
 import React from 'react';
-import { Brain, Github, Twitter, Linkedin } from 'lucide-react';
+import { Brain, Globe, Instagram, Linkedin } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
@@ -23,16 +23,16 @@ const Footer: React.FC = () => {
             <a 
               href="#" 
               className="text-gray-400 hover:text-blue-400 transition-all duration-300 transform hover:scale-110"
-              aria-label="GitHub"
+              aria-label="Website"
             >
-              <Github className="h-5 w-5 sm:h-6 sm:w-6" />
+              <Globe className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
             <a 
               href="#" 
               className="text-gray-400 hover:text-blue-400 transition-all duration-300 transform hover:scale-110"
-              aria-label="Twitter"
+              aria-label="Instagram"
             >
-              <Twitter className="h-5 w-5 sm:h-6 sm:w-6" />
+              <Instagram className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
             <a 
               href="#" 
