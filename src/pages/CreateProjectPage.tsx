@@ -34,9 +34,9 @@ const CreateProjectPage: React.FC = () => {
       provider: 'openai-gpt4'
     },
     prompts: {
-      customPromptForExaCompanyInformationExtraction: 'Extract comprehensive company information including industry, size, recent news, and key decision makers from the provided data.',
-      icebreakerPersonalizedSystemPrompt: 'You are an expert at creating personalized icebreakers for cold emails. Use the provided company and contact information to create engaging, relevant opening lines.',
-      icebreakerPersonalizedUserPrompt: 'Create a personalized icebreaker for this contact based on their role, company, and any available information about recent company developments or achievements.'
+      customPromptForExaCompanyInformationExtraction: '',
+      icebreakerPersonalizedSystemPrompt: '',
+      icebreakerPersonalizedUserPrompt: ''
     },
     companySizeLimits: {
       verySmallMax: 10,
@@ -168,6 +168,16 @@ const CreateProjectPage: React.FC = () => {
     const apiKeyField = getApiKeyField(formData.aiModel.provider);
     if (!formData.aiModel[apiKeyField as keyof typeof formData.aiModel]) {
       errors.push('API key is required for the selected AI model');
+    }
+
+    // Validate EXA API key
+    if (!formData.aiModel.exaKey) {
+      errors.push('EXA API Key is required');
+    }
+
+    // Validate SSM API key
+    if (!formData.aiModel.ssmKey) {
+      errors.push('SSM API Key is required');
     }
 
     return errors;

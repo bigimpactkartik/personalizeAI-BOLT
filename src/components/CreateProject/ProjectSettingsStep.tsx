@@ -35,6 +35,8 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
   const aiModelOptions = [
     { value: 'openai-gpt4', label: 'OpenAI GPT-4', description: 'Most versatile and creative' },
     { value: 'openai-gpt4o', label: 'OpenAI GPT-4o', description: 'Optimized for speed and efficiency' },
+    { value: 'openai-gpt4o-mini', label: 'OpenAI GPT-4o Mini', description: 'Lightweight and fast' },
+    { value: 'openai-gpt41-nano', label: 'OpenAI GPT-4.1 Nano', description: 'Ultra-efficient model' },
     { value: 'openai-gpt35', label: 'OpenAI GPT-3.5 Turbo', description: 'Fast and cost-effective' },
     { value: 'gemini-pro', label: 'Google Gemini Pro', description: 'Great for research and analysis' },
     { value: 'gemini-ultra', label: 'Google Gemini Ultra', description: 'Most capable Gemini model' },
@@ -93,6 +95,16 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
     const apiKeyField = getApiKeyField(formData.aiModel.provider);
     if (!formData.aiModel[apiKeyField as keyof typeof formData.aiModel]) {
       newErrors.apiKey = `${getApiKeyLabel(formData.aiModel.provider)} is required`;
+    }
+
+    // Validate EXA API key
+    if (!formData.aiModel.exaKey) {
+      newErrors.exaKey = 'EXA API Key is required';
+    }
+
+    // Validate SSM API key
+    if (!formData.aiModel.ssmKey) {
+      newErrors.ssmKey = 'SSM API Key is required';
     }
 
     setErrors(newErrors);
@@ -334,6 +346,34 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                     />
                   </div>
                 )}
+
+                {/* EXA API Key */}
+                <div>
+                  <Input
+                    label="EXA API Key"
+                    type="password"
+                    placeholder="Enter your EXA API Key"
+                    value={formData.aiModel.exaKey || ''}
+                    onChange={(e) => updateAiModel('exaKey', e.target.value)}
+                    error={errors.exaKey}
+                    required
+                    helperText="Required for company information extraction"
+                  />
+                </div>
+
+                {/* SSM API Key */}
+                <div>
+                  <Input
+                    label="SSM API Key"
+                    type="password"
+                    placeholder="Enter your SSM API Key"
+                    value={formData.aiModel.ssmKey || ''}
+                    onChange={(e) => updateAiModel('ssmKey', e.target.value)}
+                    error={errors.ssmKey}
+                    required
+                    helperText="Required for secure storage and management"
+                  />
+                </div>
               </div>
             </div>
           </div>

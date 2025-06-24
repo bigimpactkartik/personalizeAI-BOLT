@@ -77,6 +77,7 @@ export interface ProjectFormData {
     openaiKey?: string;
     geminiKey?: string;
     claudeKey?: string;
+    exaKey?: string;
     ssmKey?: string;
   };
   

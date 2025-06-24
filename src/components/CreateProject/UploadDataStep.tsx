@@ -29,6 +29,10 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
     { name: 'Email', required: true },
     { name: 'First Name', required: false },
     { name: 'Last Name', required: false },
+    { name: 'Job Title', required: true },
+    { name: 'Department', required: false, preferred: true },
+    { name: 'Seniority', required: true },
+    { name: 'Role', required: true },
     { name: 'Company', required: true },
     { name: 'Company Size', required: false },
     { name: 'Company Website', required: true },
@@ -197,12 +201,12 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
               {requiredColumns.map((column, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                    column.required ? 'bg-red-500' : 'bg-green-500'
+                    column.required ? 'bg-red-500' : column.preferred ? 'bg-yellow-500' : 'bg-green-500'
                   }`} />
                   <span className={`text-xs sm:text-sm ${
-                    column.required ? 'font-medium text-gray-900' : 'text-gray-700'
+                    column.required ? 'font-medium text-gray-900' : column.preferred ? 'font-medium text-yellow-700' : 'text-gray-700'
                   }`}>
-                    {column.name} {column.required && '(Required)'}
+                    {column.name} {column.required && '(Required)'} {column.preferred && '(Preferred)'}
                   </span>
                 </div>
               ))}
