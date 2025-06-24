@@ -360,10 +360,13 @@ const DashboardPage: React.FC = () => {
             <div className="text-sm text-neural-600">Ongoing</div>
           </Card>
           <Card className="text-center p-6 neural-glow" hover>
-            <div className="text-2xl font-bold text-error-600 mb-1">
-              {projects.filter(p => (p.status || '').toUpperCase() === 'FAILED').length}
+            <div className="text-2xl font-bold text-warning-600 mb-1">
+              {projects.filter(p => {
+                const status = (p.status || '').toUpperCase();
+                return status === 'READY TO PROCESS' || status === 'FAILED';
+              }).length}
             </div>
-            <div className="text-sm text-neural-600">Failed</div>
+            <div className="text-sm text-neural-600">Ready to Start</div>
           </Card>
         </div>
 
