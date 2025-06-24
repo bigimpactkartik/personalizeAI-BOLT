@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Calculator, Key, Users, Settings, MessageSquare, Clock } from 'lucide-react';
+import { ChevronDown, ChevronRight, Calculator, Key, Users, Settings, MessageSquare, Clock, Target } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
