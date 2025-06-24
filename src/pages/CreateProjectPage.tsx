@@ -22,7 +22,7 @@ const CreateProjectPage: React.FC = () => {
     projectName: '',
     description: '',
     targetAudience: '',
-    dataSource: 'excel',
+    dataSource: 'googlesheet',
     emailCapacity: {
       mailboxes: 1,
       emailsPerMailbox: 30,
@@ -152,15 +152,22 @@ const CreateProjectPage: React.FC = () => {
       errors.push('At least 1 email per contact is required');
     }
 
-    // Validate required prompts
-    if (!formData.prompts.customPromptForExaCompanyInformationExtraction.trim()) {
-      errors.push('Custom prompt for EXA company information extraction is required');
+    // Validate AI model and API key
+    if (!formData.aiModel.provider) {
+      errors.push('Please select an AI model');
     }
-    if (!formData.prompts.icebreakerPersonalizedSystemPrompt.trim()) {
-      errors.push('Icebreaker system prompt is required');
-    }
-    if (!formData.prompts.icebreakerPersonalizedUserPrompt.trim()) {
-      errors.push('Icebreaker user prompt is required');
+
+    // Check for API key based on selected model
+    const getApiKeyField = (provider: string) => {
+      if (provider.startsWith('openai')) return 'openaiKey';
+      if (provider.startsWith('gemini')) return 'geminiKey';
+      if (provider.startsWith('claude')) return 'claudeKey';
+      return 'openaiKey';
+    };
+
+    const apiKeyField = getApiKeyField(formData.aiModel.provider);
+    if (!formData.aiModel[apiKeyField as keyof typeof formData.aiModel]) {
+      errors.push('API key is required for the selected AI model');
     }
 
     return errors;
@@ -201,8 +208,18 @@ const CreateProjectPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // Ensure prompts have default values if empty
+      const finalFormData = {
+        ...formData,
+        prompts: {
+          customPromptForExaCompanyInformationExtraction: formData.prompts?.customPromptForExaCompanyInformationExtraction || 'Extract comprehensive company information including industry, size, recent news, and key decision makers from the provided data.',
+          icebreakerPersonalizedSystemPrompt: formData.prompts?.icebreakerPersonalizedSystemPrompt || 'You are an expert at creating personalized icebreakers for cold emails. Use the provided company and contact information to create engaging, relevant opening lines.',
+          icebreakerPersonalizedUserPrompt: formData.prompts?.icebreakerPersonalizedUserPrompt || 'Create a personalized icebreaker for this contact based on their role, company, and any available information about recent company developments or achievements.'
+        }
+      };
+
       // Create the project
-      const createdProject = await projectService.createProject(formData, user.uuid);
+      const createdProject = await projectService.createProject(finalFormData, user.uuid);
       
       setSuccess(true);
       

@@ -22,6 +22,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
   const [showEmailCapacity, setShowEmailCapacity] = useState(false);
   const [showPromptSettings, setShowPromptSettings] = useState(false);
   const [showCompanyTargeting, setShowCompanyTargeting] = useState(false);
+  const [showContactLimits, setShowContactLimits] = useState(false);
   const [showTimingSettings, setShowTimingSettings] = useState(false);
   const [calculatedCapacity, setCalculatedCapacity] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -41,6 +42,20 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
     { value: 'claude-sonnet', label: 'Anthropic Claude 3 Sonnet', description: 'Balanced performance and speed' },
     { value: 'claude-haiku', label: 'Anthropic Claude 3 Haiku', description: 'Fastest Claude model' }
   ];
+
+  const getApiKeyLabel = (provider: string) => {
+    if (provider.startsWith('openai')) return 'OpenAI API Key';
+    if (provider.startsWith('gemini')) return 'Google Gemini API Key';
+    if (provider.startsWith('claude')) return 'Anthropic Claude API Key';
+    return 'API Key';
+  };
+
+  const getApiKeyField = (provider: string) => {
+    if (provider.startsWith('openai')) return 'openaiKey';
+    if (provider.startsWith('gemini')) return 'geminiKey';
+    if (provider.startsWith('claude')) return 'claudeKey';
+    return 'openaiKey';
+  };
 
   const calculateCapacity = () => {
     const { mailboxes, emailsPerMailbox, batchDuration, emailsPerContact } = formData.emailCapacity;
@@ -74,15 +89,10 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
       newErrors.aiModel = 'Please select an AI model';
     }
 
-    // Validate required prompts
-    if (!formData.prompts?.customPromptForExaCompanyInformationExtraction?.trim()) {
-      newErrors.exaPrompt = 'Custom prompt for EXA company information extraction is required';
-    }
-    if (!formData.prompts?.icebreakerPersonalizedSystemPrompt?.trim()) {
-      newErrors.systemPrompt = 'Icebreaker system prompt is required';
-    }
-    if (!formData.prompts?.icebreakerPersonalizedUserPrompt?.trim()) {
-      newErrors.userPrompt = 'Icebreaker user prompt is required';
+    // Validate API key for selected model
+    const apiKeyField = getApiKeyField(formData.aiModel.provider);
+    if (!formData.aiModel[apiKeyField as keyof typeof formData.aiModel]) {
+      newErrors.apiKey = `${getApiKeyLabel(formData.aiModel.provider)} is required`;
     }
 
     setErrors(newErrors);
@@ -179,7 +189,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Project Settings</h2>
           <p className="text-sm sm:text-base text-gray-600">
-            Configure your email capacity, AI model, prompts, and targeting settings
+            Configure your email capacity, AI model, and targeting settings
           </p>
         </div>
 
@@ -295,7 +305,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
           <div className="transition-all duration-300 ease-in-out">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Key className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              AI Models
+              AI Model Configuration
             </h3>
             <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
               <div className="space-y-4 sm:space-y-6">
@@ -309,175 +319,67 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                   required
                 />
 
-                <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg transition-all duration-200">
-                  <p className="text-xs sm:text-sm text-blue-800">
-                    <strong>Note:</strong> AI model configuration and API keys will be handled automatically by our system.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Prompt Settings - Collapsible */}
-          <div className="transition-all duration-300 ease-in-out">
-            <button
-              type="button"
-              onClick={() => setShowPromptSettings(!showPromptSettings)}
-              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
-            >
-              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>AI Prompt Settings</span>
-              <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full ml-2">Required</span>
-              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
-                showPromptSettings ? 'rotate-90' : ''
-              }`} />
-            </button>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              showPromptSettings ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Custom Prompt for EXA Company Information Extraction <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none ${
-                        errors.exaPrompt ? 'border-red-500 focus:ring-red-500' : ''
-                      }`}
-                      rows={4}
-                      placeholder="Enter your custom prompt for extracting company information using EXA. This prompt will be used to analyze and identify company-related data..."
-                      value={formData.prompts?.customPromptForExaCompanyInformationExtraction || ''}
-                      onChange={(e) => updatePrompts('customPromptForExaCompanyInformationExtraction', e.target.value)}
-                    />
-                    {errors.exaPrompt && (
-                      <p className="mt-1 text-sm text-red-600">{errors.exaPrompt}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Icebreaker Personalized System Prompt <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none ${
-                        errors.systemPrompt ? 'border-red-500 focus:ring-red-500' : ''
-                      }`}
-                      rows={4}
-                      placeholder="Enter the system instructions for personalizing icebreakers..."
-                      value={formData.prompts?.icebreakerPersonalizedSystemPrompt || ''}
-                      onChange={(e) => updatePrompts('icebreakerPersonalizedSystemPrompt', e.target.value)}
-                    />
-                    {errors.systemPrompt && (
-                      <p className="mt-1 text-sm text-red-600">{errors.systemPrompt}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Icebreaker Personalized User Prompt <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none ${
-                        errors.userPrompt ? 'border-red-500 focus:ring-red-500' : ''
-                      }`}
-                      rows={4}
-                      placeholder="Enter the user context for icebreaker generation..."
-                      value={formData.prompts?.icebreakerPersonalizedUserPrompt || ''}
-                      onChange={(e) => updatePrompts('icebreakerPersonalizedUserPrompt', e.target.value)}
-                    />
-                    {errors.userPrompt && (
-                      <p className="mt-1 text-sm text-red-600">{errors.userPrompt}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Limits by Company Size */}
-          <div className="transition-all duration-300 ease-in-out">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Contact Limits by Company Size
-            </h3>
-            <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {companySizes.map((size) => (
-                  <div key={size.key}>
+                {/* API Key Input - Shows when model is selected */}
+                {formData.aiModel.provider && (
+                  <div className="slide-in">
                     <Input
-                      label={size.label}
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={formData.contactLimits?.[size.contactLimit as keyof typeof formData.contactLimits] || 0}
-                      onChange={(e) => updateContactLimits(size.contactLimit, parseInt(e.target.value) || 0)}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      label={getApiKeyLabel(formData.aiModel.provider)}
+                      type="password"
+                      placeholder={`Enter your ${getApiKeyLabel(formData.aiModel.provider)}`}
+                      value={formData.aiModel[getApiKeyField(formData.aiModel.provider) as keyof typeof formData.aiModel] || ''}
+                      onChange={(e) => updateAiModel(getApiKeyField(formData.aiModel.provider), e.target.value)}
+                      error={errors.apiKey}
+                      required
+                      helperText="Your API key will be securely stored and used only for this project"
                     />
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
 
-          {/* Timing Settings */}
+          {/* Contact Limits by Company Size - Collapsible */}
           <div className="transition-all duration-300 ease-in-out">
             <button
               type="button"
-              onClick={() => setShowTimingSettings(!showTimingSettings)}
+              onClick={() => setShowContactLimits(!showContactLimits)}
               className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
             >
-              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Timing Settings</span>
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Contact Limits by Company Size</span>
               <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
-                showTimingSettings ? 'rotate-90' : ''
+                showContactLimits ? 'rotate-90' : ''
               }`} />
             </button>
 
             <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              showTimingSettings ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
+              showContactLimits ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
             }`}>
               <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label="Days Between Contacts"
-                    type="number"
-                    min="1"
-                    max="30"
-                    value={formData.timingSettings?.daysBetweenContacts || 3}
-                    onChange={(e) => updateTimingSettings('daysBetweenContacts', parseInt(e.target.value) || 3)}
-                    helperText="Minimum days before contacting the same person again"
-                    style={{ 
-                      MozAppearance: 'textfield',
-                      WebkitAppearance: 'none'
-                    }}
-                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <Input
-                    label="Follow-up Cycle Days"
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={formData.timingSettings?.followUpCycleDays || 7}
-                    onChange={(e) => updateTimingSettings('followUpCycleDays', parseInt(e.target.value) || 7)}
-                    helperText="Days after which follow-up emails are triggered"
-                    style={{ 
-                      MozAppearance: 'textfield',
-                      WebkitAppearance: 'none'
-                    }}
-                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {companySizes.map((size) => (
+                    <div key={size.key}>
+                      <Input
+                        label={size.label}
+                        type="number"
+                        min="0"
+                        max="50"
+                        value={formData.contactLimits?.[size.contactLimit as keyof typeof formData.contactLimits] || 0}
+                        onChange={(e) => updateContactLimits(size.contactLimit, parseInt(e.target.value) || 0)}
+                        style={{ 
+                          MozAppearance: 'textfield',
+                          WebkitAppearance: 'none'
+                        }}
+                        className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Company Targeting by Size - Collapsible */}
+          {/* Company Targeting Settings - Collapsible */}
           <div className="transition-all duration-300 ease-in-out">
             <button
               type="button"
@@ -485,7 +387,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
               className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
             >
               <Target className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Advanced Company Targeting</span>
+              <span>Company Targeting Settings</span>
               <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
                 showCompanyTargeting ? 'rotate-90' : ''
               }`} />
@@ -567,6 +469,127 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Timing Settings - Collapsible */}
+          <div className="transition-all duration-300 ease-in-out">
+            <button
+              type="button"
+              onClick={() => setShowTimingSettings(!showTimingSettings)}
+              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
+            >
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Timing Settings</span>
+              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
+                showTimingSettings ? 'rotate-90' : ''
+              }`} />
+            </button>
+
+            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+              showTimingSettings ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label="Days Between Contacts"
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={formData.timingSettings?.daysBetweenContacts || 3}
+                    onChange={(e) => updateTimingSettings('daysBetweenContacts', parseInt(e.target.value) || 3)}
+                    helperText="Minimum days before contacting the same person again"
+                    style={{ 
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none'
+                    }}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <Input
+                    label="Follow-up Cycle Days"
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={formData.timingSettings?.followUpCycleDays || 7}
+                    onChange={(e) => updateTimingSettings('followUpCycleDays', parseInt(e.target.value) || 7)}
+                    helperText="Days after which follow-up emails are triggered"
+                    style={{ 
+                      MozAppearance: 'textfield',
+                      WebkitAppearance: 'none'
+                    }}
+                    className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Prompt Settings - Collapsible at bottom */}
+          <div className="transition-all duration-300 ease-in-out">
+            <button
+              type="button"
+              onClick={() => setShowPromptSettings(!showPromptSettings)}
+              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
+            >
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>AI Prompt Settings</span>
+              <span className="text-xs text-gray-500 ml-2">(Optional - defaults will be used if empty)</span>
+              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
+                showPromptSettings ? 'rotate-90' : ''
+              }`} />
+            </button>
+
+            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+              showPromptSettings ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> These prompts are optional. If left empty, we will use our optimized default prompts that work well for most use cases.
+                  </p>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Custom Prompt for EXA Company Information Extraction
+                    </label>
+                    <textarea
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                      rows={4}
+                      placeholder="Leave empty to use default prompt for extracting company information..."
+                      value={formData.prompts?.customPromptForExaCompanyInformationExtraction || ''}
+                      onChange={(e) => updatePrompts('customPromptForExaCompanyInformationExtraction', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Icebreaker Personalized System Prompt
+                    </label>
+                    <textarea
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                      rows={4}
+                      placeholder="Leave empty to use default system instructions for personalizing icebreakers..."
+                      value={formData.prompts?.icebreakerPersonalizedSystemPrompt || ''}
+                      onChange={(e) => updatePrompts('icebreakerPersonalizedSystemPrompt', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Icebreaker Personalized User Prompt
+                    </label>
+                    <textarea
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                      rows={4}
+                      placeholder="Leave empty to use default user context for icebreaker generation..."
+                      value={formData.prompts?.icebreakerPersonalizedUserPrompt || ''}
+                      onChange={(e) => updatePrompts('icebreakerPersonalizedUserPrompt', e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

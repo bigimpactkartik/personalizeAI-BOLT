@@ -101,18 +101,18 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Choose Data Source</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div
-              className={`border-2 rounded-lg p-4 sm:p-6 cursor-pointer transition-all duration-300 ${
+              className={`border-2 rounded-lg p-4 sm:p-6 cursor-not-allowed transition-all duration-300 opacity-50 ${
                 formData.dataSource === 'excel'
-                  ? 'border-blue-500 bg-blue-50 transform scale-105'
-                  : 'border-gray-300 hover:border-gray-400 hover:shadow-md'
+                  ? 'border-gray-300 bg-gray-50'
+                  : 'border-gray-300 bg-gray-50'
               }`}
-              onClick={() => handleDataSourceChange('excel')}
             >
               <div className="flex items-center space-x-3">
-                <FileSpreadsheet className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                <FileSpreadsheet className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                 <div>
-                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Upload Excel File</h4>
-                  <p className="text-xs sm:text-sm text-gray-600">Upload a .xlsx or .csv file</p>
+                  <h4 className="font-semibold text-gray-500 text-sm sm:text-base">Upload Excel File</h4>
+                  <p className="text-xs sm:text-sm text-gray-400">Upload a .xlsx or .csv file</p>
+                  <p className="text-xs font-medium text-orange-600 mt-1">AVAILABLE SOON</p>
                 </div>
               </div>
             </div>
@@ -136,41 +136,33 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
           </div>
         </div>
 
-        {/* File Upload Section */}
+        {/* File Upload Section - Disabled */}
         {formData.dataSource === 'excel' && (
           <div className="mb-6 sm:mb-8 slide-in">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-500 mb-2">
               Upload Excel File <span className="text-red-500">*</span>
             </label>
-            <div className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-all duration-300 ${
-              formData.excelFile ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-gray-400'
-            }`}>
+            <div className="border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-all duration-300 border-gray-200 bg-gray-50 opacity-50">
               <input
                 type="file"
                 accept=".xlsx,.xls,.csv"
                 onChange={handleFileUpload}
                 className="hidden"
                 id="file-upload"
+                disabled
               />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                {formData.excelFile ? (
-                  <div className="fade-in-up">
-                    <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 text-green-600 mx-auto mb-4" />
-                    <p className="text-base sm:text-lg font-medium text-gray-900 break-all">{formData.excelFile.name}</p>
-                    <p className="text-xs sm:text-sm text-gray-600">File uploaded successfully</p>
-                  </div>
-                ) : (
-                  <div>
-                    <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-base sm:text-lg font-medium text-gray-900">Click to upload file</p>
-                    <p className="text-xs sm:text-sm text-gray-600">Supports .xlsx, .xls, and .csv files</p>
-                  </div>
-                )}
+              <label htmlFor="file-upload" className="cursor-not-allowed">
+                <div>
+                  <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-base sm:text-lg font-medium text-gray-400">Excel Upload Coming Soon</p>
+                  <p className="text-xs sm:text-sm text-gray-400">This feature will be available in the next update</p>
+                  <p className="text-xs font-medium text-orange-600 mt-2">AVAILABLE SOON</p>
+                </div>
               </label>
             </div>
-            {errors.excelFile && (
-              <p className="mt-1 text-sm text-red-600 slide-in">{errors.excelFile}</p>
-            )}
+            <p className="mt-2 text-sm text-orange-600">
+              Excel file upload functionality is currently under development and will be available soon.
+            </p>
           </div>
         )}
 
@@ -222,7 +214,12 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
           <Button variant="outline" onClick={handlePrevious} className="w-full sm:w-auto transition-all duration-200">
             Previous
           </Button>
-          <Button onClick={handleNext} size="lg" className="w-full sm:w-auto transition-all duration-200">
+          <Button 
+            onClick={handleNext} 
+            size="lg" 
+            className="w-full sm:w-auto transition-all duration-200"
+            disabled={formData.dataSource === 'excel'}
+          >
             Next: Settings
           </Button>
         </div>
