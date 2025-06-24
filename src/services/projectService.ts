@@ -123,9 +123,22 @@ class ProjectService {
 
   async createProject(projectData: ProjectFormData, userId: string): Promise<ProjectResponse> {
     try {
-      const requestData: ProjectCreateRequest = this.transformFormDataToRequest(projectData, userId);
-      const response = await apiClient.post('/project', requestData);
-      return response.data;
+      // Check if Excel file is provided
+      if (projectData.dataSource === 'excel' && projectData.excelFile) {
+        // Use multipart/form-data for Excel file upload
+        const formData = this.transformFormDataToFlatRequestForMultipart(projectData, userId);
+        const response = await apiClient.post('/project', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        return response.data;
+      } else {
+        // Use JSON for Google Sheet data source
+        const requestData: ProjectCreateRequest = this.transformFormDataToRequest(projectData, userId);
+        const response = await apiClient.post('/project', requestData);
+        return response.data;
+      }
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Failed to create project');
     }
@@ -235,6 +248,94 @@ class ProjectService {
       seniority_tier_3: formData.seniority_tier_3,
       seniority_excluded: formData.seniority_excluded
     };
+  }
+
+  private transformFormDataToFlatRequestForMultipart(formData: ProjectFormData, userId: string): FormData {
+    const multipartFormData = new FormData();
+    
+    // Add the Excel file
+    if (formData.excelFile) {
+      multipartFormData.append('file', formData.excelFile);
+    }
+    
+    // Add basic project information
+    multipartFormData.append('name', formData.projectName);
+    multipartFormData.append('user_id', userId);
+    if (formData.description) {
+      multipartFormData.append('description', formData.description);
+    }
+    
+    // Add email capacity settings
+    multipartFormData.append('no_of_mailbox', formData.emailCapacity.mailboxes.toString());
+    multipartFormData.append('emails_per_mailbox', formData.emailCapacity.emailsPerMailbox.toString());
+    multipartFormData.append('email_per_contact', formData.emailCapacity.emailsPerContact.toString());
+    multipartFormData.append('batch_duration_days', formData.emailCapacity.batchDuration.toString());
+    
+    // Add required prompts
+    multipartFormData.append('custom_prompt_for_exa_company_information_extraction', formData.prompts.customPromptForExaCompanyInformationExtraction);
+    multipartFormData.append('icebreaker_personalized_system_prompt', formData.prompts.icebreakerPersonalizedSystemPrompt);
+    multipartFormData.append('icebreaker_personalized_user_prompt', formData.prompts.icebreakerPersonalizedUserPrompt);
+    
+    // Add contact limits
+    multipartFormData.append('contact_limit_very_small', formData.contactLimits.verySmall.toString());
+    multipartFormData.append('contact_limit_small_company', formData.contactLimits.smallCompany.toString());
+    multipartFormData.append('contact_limit_medium_company', formData.contactLimits.mediumCompany.toString());
+    multipartFormData.append('contact_limit_large_company', formData.contactLimits.largeCompany.toString());
+    multipartFormData.append('contact_limit_enterprise', formData.contactLimits.enterprise.toString());
+    
+    // Add company size thresholds
+    multipartFormData.append('company_size_very_small_max', formData.companySizeLimits.verySmallMax.toString());
+    multipartFormData.append('company_size_small_max', formData.companySizeLimits.smallMax.toString());
+    multipartFormData.append('company_size_medium_max', formData.companySizeLimits.mediumMax.toString());
+    multipartFormData.append('company_size_large_max', formData.companySizeLimits.largeMax.toString());
+    multipartFormData.append('company_size_enterprise_min', formData.companySizeLimits.enterpriseMin.toString());
+    
+    // Add primary target roles by company size (stringify arrays)
+    multipartFormData.append('company_size_very_small_primary_target_roles', JSON.stringify(formData.companyTargetingBySize.verySmall.primaryTargetRoles));
+    multipartFormData.append('company_size_small_primary_target_roles', JSON.stringify(formData.companyTargetingBySize.small.primaryTargetRoles));
+    multipartFormData.append('company_size_medium_primary_target_roles', JSON.stringify(formData.companyTargetingBySize.medium.primaryTargetRoles));
+    multipartFormData.append('company_size_large_primary_target_roles', JSON.stringify(formData.companyTargetingBySize.large.primaryTargetRoles));
+    multipartFormData.append('company_size_enterprise_primary_target_roles', JSON.stringify(formData.companyTargetingBySize.enterprise.primaryTargetRoles));
+    
+    // Add secondary target roles by company size (stringify arrays)
+    multipartFormData.append('company_size_very_small_secondary_target_roles', JSON.stringify(formData.companyTargetingBySize.verySmall.secondaryTargetRoles));
+    multipartFormData.append('company_size_small_secondary_target_roles', JSON.stringify(formData.companyTargetingBySize.small.secondaryTargetRoles));
+    multipartFormData.append('company_size_medium_secondary_target_roles', JSON.stringify(formData.companyTargetingBySize.medium.secondaryTargetRoles));
+    multipartFormData.append('company_size_large_secondary_target_roles', JSON.stringify(formData.companyTargetingBySize.large.secondaryTargetRoles));
+    multipartFormData.append('company_size_enterprise_secondary_target_roles', JSON.stringify(formData.companyTargetingBySize.enterprise.secondaryTargetRoles));
+    
+    // Add exclusion roles by company size (stringify arrays)
+    multipartFormData.append('company_size_very_small_exclusion_roles', JSON.stringify(formData.companyTargetingBySize.verySmall.exclusionRoles));
+    multipartFormData.append('company_size_small_exclusion_roles', JSON.stringify(formData.companyTargetingBySize.small.exclusionRoles));
+    multipartFormData.append('company_size_medium_exclusion_roles', JSON.stringify(formData.companyTargetingBySize.medium.exclusionRoles));
+    multipartFormData.append('company_size_large_exclusion_roles', JSON.stringify(formData.companyTargetingBySize.large.exclusionRoles));
+    multipartFormData.append('company_size_enterprise_exclusion_roles', JSON.stringify(formData.companyTargetingBySize.enterprise.exclusionRoles));
+    
+    // Add target departments by company size (stringify arrays)
+    multipartFormData.append('company_size_very_small_target_departments', JSON.stringify(formData.companyTargetingBySize.verySmall.targetDepartments));
+    multipartFormData.append('company_size_small_target_departments', JSON.stringify(formData.companyTargetingBySize.small.targetDepartments));
+    multipartFormData.append('company_size_medium_target_departments', JSON.stringify(formData.companyTargetingBySize.medium.targetDepartments));
+    multipartFormData.append('company_size_large_target_departments', JSON.stringify(formData.companyTargetingBySize.large.targetDepartments));
+    multipartFormData.append('company_size_enterprise_target_departments', JSON.stringify(formData.companyTargetingBySize.enterprise.targetDepartments));
+    
+    // Add exclusion departments by company size (stringify arrays)
+    multipartFormData.append('company_size_very_small_exclusion_departments', JSON.stringify(formData.companyTargetingBySize.verySmall.exclusionDepartments));
+    multipartFormData.append('company_size_small_exclusion_departments', JSON.stringify(formData.companyTargetingBySize.small.exclusionDepartments));
+    multipartFormData.append('company_size_medium_exclusion_departments', JSON.stringify(formData.companyTargetingBySize.medium.exclusionDepartments));
+    multipartFormData.append('company_size_large_exclusion_departments', JSON.stringify(formData.companyTargetingBySize.large.exclusionDepartments));
+    multipartFormData.append('company_size_enterprise_exclusion_departments', JSON.stringify(formData.companyTargetingBySize.enterprise.exclusionDepartments));
+    
+    // Add timing settings
+    multipartFormData.append('days_between_contacts', formData.timingSettings.daysBetweenContacts.toString());
+    multipartFormData.append('follow_up_cycle_days', formData.timingSettings.followUpCycleDays.toString());
+    
+    // Add seniority tier fields (stringify arrays)
+    multipartFormData.append('seniority_tier_1', JSON.stringify(formData.seniority_tier_1));
+    multipartFormData.append('seniority_tier_2', JSON.stringify(formData.seniority_tier_2));
+    multipartFormData.append('seniority_tier_3', JSON.stringify(formData.seniority_tier_3));
+    multipartFormData.append('seniority_excluded', JSON.stringify(formData.seniority_excluded));
+    
+    return multipartFormData;
   }
 }
 
