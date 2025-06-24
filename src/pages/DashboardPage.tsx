@@ -4,11 +4,9 @@ import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, Mess
 import { useAuth } from '../contexts/AuthContext';
 import { PlatformFeedbackFormData } from '../types/feedback';
 import projectService, { ProjectResponse } from '../services/projectService';
-import { useProjectStart } from '../hooks/useProjectStart';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import Modal from '../components/UI/Modal';
-import ProjectStartButton from '../components/UI/ProjectStartButton';
 import PlatformFeedbackForm from '../components/Feedback/PlatformFeedbackForm';
 import feedbackService from '../services/feedbackService';
 
@@ -20,26 +18,6 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [downloadingProjects, setDownloadingProjects] = useState<Set<string>>(new Set());
-
-  // Project start functionality
-  const { startProject, isStarting, getError, clearError } = useProjectStart({
-    onSuccess: (projectId) => {
-      console.log(`Project ${projectId} started successfully`);
-      // Refresh projects to get updated status
-      fetchUserProjects();
-    },
-    onError: (error) => {
-      console.error('Project start error:', error);
-    },
-    onStatusChange: (projectId, newStatus) => {
-      // Update local project status
-      setProjects(prev => prev.map(project => 
-        project.id === projectId 
-          ? { ...project, status: newStatus }
-          : project
-      ));
-    }
-  });
 
   useEffect(() => {
     if (user?.uuid) {
@@ -69,23 +47,6 @@ const DashboardPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleStartProject = async (project: ProjectResponse) => {
-    if (!project.sheet_link) {
-      console.error('No sheet link available for project');
-      return;
-    }
-
-    // For demo purposes, using placeholder API keys
-    // In production, these would be retrieved from secure storage or project settings
-    const apiKeys = {
-      openaiKey: 'placeholder_openai_key',
-      ssMastersKey: 'placeholder_ss_masters_key',
-      exaApiKey: 'placeholder_exa_api_key'
-    };
-
-    await startProject(project.id, project.sheet_link, apiKeys);
   };
 
   const handleDownloadSheet = async (projectId: string, projectName: string) => {
@@ -306,21 +267,6 @@ const DashboardPage: React.FC = () => {
                         <span className={getStatusBadge(project.status)}>
                           {getStatusText(project.status)}
                         </span>
-                        
-                        {/* Start Button - Only show for projects that haven't started */}
-                        {(project.status || '').toUpperCase() === 'READY TO PROCESS' && (
-                          <ProjectStartButton
-                            projectId={project.id}
-                            projectName={project.name}
-                            status={project.status}
-                            onStatusChange={(newStatus) => {
-                              setProjects(prev => prev.map(p => 
-                                p.id === project.id ? { ...p, status: newStatus } : p
-                              ));
-                            }}
-                            disabled={isStarting(project.id)}
-                          />
-                        )}
                       </div>
                       
                       {project.description && (
