@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare, Eye, Play } from 'lucide-react';
+import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare, Eye } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { PlatformFeedbackFormData } from '../types/feedback';
 import projectService, { ProjectResponse } from '../services/projectService';
+import { useProjectStart } from '../hooks/useProjectStart';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import Modal from '../components/UI/Modal';
+import ProjectStartButton from '../components/UI/ProjectStartButton';
 import PlatformFeedbackForm from '../components/Feedback/PlatformFeedbackForm';
 import feedbackService from '../services/feedbackService';
 
@@ -18,8 +20,26 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [downloadingProjects, setDownloadingProjects] = useState<Set<string>>(new Set());
-  const [startingProjects, setStartingProjects] = useState<Set<string>>(new Set());
-  const [startErrors, setStartErrors] = useState<Record<string, string>>({});
+
+  // Project start functionality
+  const { startProject, isStarting, getError, clearError } = useProjectStart({
+    onSuccess: (projectId) => {
+      console.log(`Project ${projectId} started successfully`);
+      // Refresh projects to get updated status
+      fetchUserProjects();
+    },
+    onError: (error) => {
+      console.error('Project start error:', error);
+    },
+    onStatusChange: (projectId, newStatus) => {
+      // Update local project status
+      setProjects(prev => prev.map(project => 
+        project.id === projectId 
+          ? { ...project, status: newStatus }
+          : project
+      ));
+    }
+  });
 
   useEffect(() => {
     if (user?.uuid) {
@@ -53,78 +73,19 @@ const DashboardPage: React.FC = () => {
 
   const handleStartProject = async (project: ProjectResponse) => {
     if (!project.sheet_link) {
-      setStartErrors(prev => ({ 
-        ...prev, 
-        [project.id]: 'No Google Sheet link found for this project' 
-      }));
+      console.error('No sheet link available for project');
       return;
     }
 
-    try {
-      setStartingProjects(prev => new Set(prev).add(project.id));
-      setStartErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[project.id];
-        return newErrors;
-      });
+    // For demo purposes, using placeholder API keys
+    // In production, these would be retrieved from secure storage or project settings
+    const apiKeys = {
+      openaiKey: 'placeholder_openai_key',
+      ssMastersKey: 'placeholder_ss_masters_key',
+      exaApiKey: 'placeholder_exa_api_key'
+    };
 
-      // Get stored auth token
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
-      // Prepare request data for the endpoint
-      const requestData = {
-        project_id: project.id,
-        original_sheet_url: project.sheet_link,
-        proceed_on_invalid_email: true,
-        openai_key: 'placeholder_openai_key', // In production, get from project settings
-        ss_masters_key: 'placeholder_ss_masters_key', // In production, get from project settings
-        exa_api_key: 'placeholder_exa_api_key' // In production, get from project settings
-      };
-
-      const response = await fetch('https://personalize-ai-v1.onrender.com/personalized-sheet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to start project processing');
-      }
-
-      const result = await response.json();
-      
-      // Update project status locally
-      setProjects(prev => prev.map(p => 
-        p.id === project.id 
-          ? { ...p, status: 'ONGOING' }
-          : p
-      ));
-
-      // Refresh projects to get updated status from server
-      setTimeout(() => {
-        fetchUserProjects();
-      }, 2000);
-
-    } catch (error: any) {
-      console.error('Error starting project:', error);
-      setStartErrors(prev => ({ 
-        ...prev, 
-        [project.id]: error.message || 'Failed to start project processing' 
-      }));
-    } finally {
-      setStartingProjects(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(project.id);
-        return newSet;
-      });
-    }
+    await startProject(project.id, project.sheet_link, apiKeys);
   };
 
   const handleDownloadSheet = async (projectId: string, projectName: string) => {
@@ -228,78 +189,6 @@ const DashboardPage: React.FC = () => {
     return Math.round((project.row_completed / project.total_row) * 100);
   };
 
-  const renderStartButton = (project: ProjectResponse) => {
-    const statusUpper = (project.status || '').toUpperCase();
-    const isStarting = startingProjects.has(project.id);
-    const hasError = startErrors[project.id];
-    
-    // Only show start button for projects that are ready to process
-    if (statusUpper !== 'READY TO PROCESS' && statusUpper !== 'FAILED') {
-      return null;
-    }
-
-    const getButtonContent = () => {
-      if (isStarting) {
-        return (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Starting...
-          </>
-        );
-      }
-
-      if (hasError) {
-        return (
-          <>
-            <AlertCircle className="mr-2 h-4 w-4" />
-            Retry
-          </>
-        );
-      }
-
-      return (
-        <>
-          <Play className="mr-2 h-4 w-4" />
-          Start Project
-        </>
-      );
-    };
-
-    const getButtonClassName = () => {
-      let classes = 'transition-all duration-300 ';
-      
-      if (hasError) {
-        classes += 'border-error-300 text-error-700 hover:bg-error-50 ';
-      } else {
-        classes += 'shadow-lg hover:shadow-xl ai-button-glow ';
-      }
-      
-      return classes;
-    };
-
-    return (
-      <div className="relative">
-        <Button
-          onClick={() => handleStartProject(project)}
-          disabled={isStarting}
-          variant={hasError ? 'outline' : 'primary'}
-          size="sm"
-          className={getButtonClassName()}
-          aria-label={`${isStarting ? 'Starting' : 'Start'} project ${project.name}`}
-        >
-          {getButtonContent()}
-        </Button>
-        
-        {/* Error Tooltip */}
-        {hasError && (
-          <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-error-50 border border-error-200 rounded text-xs text-error-600 z-10 slide-in">
-            {hasError}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen ai-background flex items-center justify-center">
@@ -360,13 +249,10 @@ const DashboardPage: React.FC = () => {
             <div className="text-sm text-neural-600">Ongoing</div>
           </Card>
           <Card className="text-center p-6 neural-glow" hover>
-            <div className="text-2xl font-bold text-warning-600 mb-1">
-              {projects.filter(p => {
-                const status = (p.status || '').toUpperCase();
-                return status === 'READY TO PROCESS' || status === 'FAILED';
-              }).length}
+            <div className="text-2xl font-bold text-error-600 mb-1">
+              {projects.filter(p => (p.status || '').toUpperCase() === 'FAILED').length}
             </div>
-            <div className="text-sm text-neural-600">Ready to Start</div>
+            <div className="text-sm text-neural-600">Failed</div>
           </Card>
         </div>
 
@@ -420,6 +306,21 @@ const DashboardPage: React.FC = () => {
                         <span className={getStatusBadge(project.status)}>
                           {getStatusText(project.status)}
                         </span>
+                        
+                        {/* Start Button - Only show for projects that haven't started */}
+                        {(project.status || '').toUpperCase() === 'READY TO PROCESS' && (
+                          <ProjectStartButton
+                            projectId={project.id}
+                            projectName={project.name}
+                            status={project.status}
+                            onStatusChange={(newStatus) => {
+                              setProjects(prev => prev.map(p => 
+                                p.id === project.id ? { ...p, status: newStatus } : p
+                              ));
+                            }}
+                            disabled={isStarting(project.id)}
+                          />
+                        )}
                       </div>
                       
                       {project.description && (
@@ -444,11 +345,7 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-shrink-0">
-                      {/* Start Project Button - positioned to the left */}
-                      {renderStartButton(project)}
-                      
-                      {/* Download Results Button - only for completed projects */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
                       {(project.status || '').toUpperCase() === 'COMPLETED' && project.response_sheet_link && (
                         <a
                           href={project.response_sheet_link}
@@ -478,13 +375,11 @@ const DashboardPage: React.FC = () => {
                           ) : (
                             <>
                               <Download className="mr-2 h-4 w-4" />
-                              Download Results
+                              Download Sheet
                             </>
                           )}
                         </a>
                       )}
-                      
-                      {/* View Details Button - positioned to the right */}
                       <Link to={`/project/${project.id}`} className="w-full sm:w-auto">
                         <Button variant="ghost" size="sm" className="w-full sm:w-auto hover:bg-primary-50 hover:text-primary-700">
                           <Eye className="mr-2 h-4 w-4" />
