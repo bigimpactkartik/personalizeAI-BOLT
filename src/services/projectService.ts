@@ -68,6 +68,12 @@ export interface ProjectCreateRequest {
   // Timing settings
   days_between_contacts: number;
   follow_up_cycle_days: number;
+
+  // Seniority tier fields required by backend
+  seniority_tier_1: string[];
+  seniority_tier_2: string[];
+  seniority_tier_3: string[];
+  seniority_excluded: string[];
 }
 
 export interface ProjectResponse {
@@ -221,7 +227,13 @@ class ProjectService {
       
       // Timing settings
       days_between_contacts: formData.timingSettings.daysBetweenContacts,
-      follow_up_cycle_days: formData.timingSettings.followUpCycleDays
+      follow_up_cycle_days: formData.timingSettings.followUpCycleDays,
+
+      // Seniority tier fields required by backend
+      seniority_tier_1: formData.seniority_tier_1,
+      seniority_tier_2: formData.seniority_tier_2,
+      seniority_tier_3: formData.seniority_tier_3,
+      seniority_excluded: formData.seniority_excluded
     };
   }
 }

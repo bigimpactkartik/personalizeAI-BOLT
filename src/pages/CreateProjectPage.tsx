@@ -56,7 +56,12 @@ const CreateProjectPage: React.FC = () => {
     timingSettings: {
       daysBetweenContacts: 3,
       followUpCycleDays: 7
-    }
+    },
+    // Initialize seniority tier fields required by backend
+    seniority_tier_1: [],
+    seniority_tier_2: [],
+    seniority_tier_3: [],
+    seniority_excluded: []
   });
 
   const steps = [

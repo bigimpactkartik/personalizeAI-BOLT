@@ -119,6 +119,12 @@ export interface ProjectFormData {
     daysBetweenContacts: number;
     followUpCycleDays: number;
   };
+
+  // Seniority tier fields required by backend
+  seniority_tier_1: string[];
+  seniority_tier_2: string[];
+  seniority_tier_3: string[];
+  seniority_excluded: string[];
 }
 
 export interface CompanySizeTargeting {
