@@ -19,6 +19,7 @@ const DashboardPage: React.FC = () => {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [downloadingProjects, setDownloadingProjects] = useState<Set<string>>(new Set());
   const [startingProjects, setStartingProjects] = useState<Set<string>>(new Set());
+  const [startErrors, setStartErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (user?.uuid) {
@@ -53,17 +54,43 @@ const DashboardPage: React.FC = () => {
   const handleStartProject = async (projectId: string) => {
     try {
       setStartingProjects(prev => new Set(prev).add(projectId));
+      setStartErrors(prev => ({ ...prev, [projectId]: '' }));
       
-      // Here you would call an API endpoint to start the project processing
-      // For now, we'll simulate the API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Find the project to get its configuration
+      const project = projects.find(p => p.id === projectId);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Check if project has required data
+      if (!project.sheet_link) {
+        throw new Error('No Google Sheet link found for this project. Please ensure the project was created with a valid Google Sheet.');
+      }
+
+      // For now, we'll use placeholder API keys since we don't store them
+      // In a real implementation, these would be retrieved from secure storage
+      const projectData = {
+        googleSheetLink: project.sheet_link,
+        openaiKey: 'placeholder_openai_key', // This should come from secure storage
+        exaKey: 'placeholder_exa_key', // This should come from secure storage
+        ssmKey: 'placeholder_ssm_key', // This should come from secure storage
+        processValidEmails: true // Default to processing only valid emails
+      };
+
+      const response = await projectService.startProject(projectId, projectData);
+      
+      // Show success message
+      console.log('Project started successfully:', response.message);
       
       // Refresh the projects list to get updated status
       await fetchUserProjects();
       
     } catch (error: any) {
       console.error('Failed to start project:', error);
-      alert('Failed to start project. Please try again.');
+      setStartErrors(prev => ({ 
+        ...prev, 
+        [projectId]: error.message || 'Failed to start project. Please try again.' 
+      }));
     } finally {
       setStartingProjects(prev => {
         const newSet = new Set(prev);
@@ -108,6 +135,10 @@ const DashboardPage: React.FC = () => {
       console.error('Error submitting platform feedback:', error);
       throw error;
     }
+  };
+
+  const clearStartError = (projectId: string) => {
+    setStartErrors(prev => ({ ...prev, [projectId]: '' }));
   };
 
   const getStatusIcon = (status: string) => {
@@ -318,6 +349,24 @@ const DashboardPage: React.FC = () => {
                           </div>
                         )}
                       </div>
+
+                      {/* Error message for start failures */}
+                      {startErrors[project.id] && (
+                        <div className="mt-3 p-3 bg-error-50 border border-error-200 rounded-lg slide-in">
+                          <div className="flex items-start space-x-2">
+                            <AlertCircle className="h-4 w-4 text-error-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-error-600 text-sm">{startErrors[project.id]}</p>
+                              <button
+                                onClick={() => clearStartError(project.id)}
+                                className="text-error-500 hover:text-error-700 text-xs mt-1 underline"
+                              >
+                                Dismiss
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-shrink-0">
@@ -326,7 +375,7 @@ const DashboardPage: React.FC = () => {
                         <Button
                           onClick={() => handleStartProject(project.id)}
                           disabled={startingProjects.has(project.id)}
-                          className="w-full sm:w-auto bg-gradient-to-r from-success-600 to-success-700 hover:from-success-700 hover:to-success-800 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                          className="w-full sm:w-auto bg-gradient-to-r from-success-600 to-success-700 hover:from-success-700 hover:to-success-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 neural-glow"
                           size="sm"
                         >
                           {startingProjects.has(project.id) ? (

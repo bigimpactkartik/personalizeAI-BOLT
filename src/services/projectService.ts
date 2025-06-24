@@ -111,6 +111,20 @@ export interface ProjectResponse {
   total_row: number;
 }
 
+export interface StartProjectRequest {
+  project_id: string;
+  original_sheet_url: string;
+  proceed_on_invalid_email: boolean;
+  openai_key: string;
+  ss_masters_key: string;
+  exa_api_key: string;
+}
+
+export interface StartProjectResponse {
+  message: string;
+  project_id: string;
+}
+
 class ProjectService {
   private static instance: ProjectService;
 
@@ -141,6 +155,56 @@ class ProjectService {
       }
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Failed to create project');
+    }
+  }
+
+  async startProject(projectId: string, projectData: {
+    googleSheetLink: string;
+    openaiKey: string;
+    exaKey: string;
+    ssmKey: string;
+    processValidEmails: boolean;
+  }): Promise<StartProjectResponse> {
+    try {
+      const requestData: StartProjectRequest = {
+        project_id: projectId,
+        original_sheet_url: projectData.googleSheetLink,
+        proceed_on_invalid_email: !projectData.processValidEmails,
+        openai_key: projectData.openaiKey,
+        ss_masters_key: projectData.ssmKey,
+        exa_api_key: projectData.exaKey
+      };
+
+      const response = await apiClient.post('/personalized-sheet', requestData);
+      return response.data;
+    } catch (error: any) {
+      // Enhanced error handling for different types of failures
+      if (error.response?.status === 400) {
+        const detail = error.response.data?.detail;
+        if (detail?.includes('Google Sheet')) {
+          throw new Error('Failed to access Google Sheet. Please check the URL and permissions.');
+        } else if (detail?.includes('required columns')) {
+          throw new Error('Missing required columns in the sheet. Please check the data format.');
+        } else if (detail?.includes('API key')) {
+          throw new Error('Invalid API key provided. Please check your credentials.');
+        } else {
+          throw new Error(detail || 'Invalid request data. Please check your project settings.');
+        }
+      } else if (error.response?.status === 401) {
+        throw new Error('Authentication failed. Please log in again.');
+      } else if (error.response?.status === 403) {
+        throw new Error('Access denied. You don\'t have permission to start this project.');
+      } else if (error.response?.status === 404) {
+        throw new Error('Project not found. It may have been deleted.');
+      } else if (error.response?.status === 429) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      } else if (error.response?.status >= 500) {
+        throw new Error('Server error occurred. Please try again later or contact support.');
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      } else {
+        throw new Error(error.response?.data?.detail || error.message || 'Failed to start project execution');
+      }
     }
   }
 
