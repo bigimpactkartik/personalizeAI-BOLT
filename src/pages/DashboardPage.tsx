@@ -67,10 +67,18 @@ const DashboardPage: React.FC = () => {
         throw new Error('No Google Sheet link found for this project. Please ensure the project was created with a valid Google Sheet.');
       }
 
-      // Simplified project data - API keys are now handled by the backend
+      // Check if project has required API keys
+      if (!project.openai_key || !project.ss_masters_key || !project.exa_api_key) {
+        throw new Error('Missing required API keys. Please ensure the project was created with valid OpenAI, SSMasters, and Exa API keys.');
+      }
+
+      // Project data with API keys from the stored project
       const projectData = {
         googleSheetLink: project.sheet_link,
-        processValidEmails: true // Default to processing only valid emails
+        processValidEmails: true, // Default to processing only valid emails
+        openaiKey: project.openai_key,
+        ssMastersKey: project.ss_masters_key,
+        exaApiKey: project.exa_api_key
       };
 
       const response = await projectService.startProject(projectId, projectData);

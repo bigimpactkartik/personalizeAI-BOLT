@@ -114,13 +114,20 @@ export interface ProjectResponse {
   logs: string[];
   row_completed: number;
   total_row: number;
+  // API Keys stored in project
+  openai_key?: string;
+  exa_api_key?: string;
+  ss_masters_key?: string;
 }
 
 export interface StartProjectRequest {
   project_id: string;
   original_sheet_url: string;
   proceed_on_invalid_email: boolean;
-  // API keys removed - backend should retrieve them from secure storage
+  // API keys are required by the backend
+  openai_key: string;
+  ss_masters_key: string;
+  exa_api_key: string;
 }
 
 export interface StartProjectResponse {
@@ -164,13 +171,19 @@ class ProjectService {
   async startProject(projectId: string, projectData: {
     googleSheetLink: string;
     processValidEmails: boolean;
+    openaiKey: string;
+    ssMastersKey: string;
+    exaApiKey: string;
   }): Promise<StartProjectResponse> {
     try {
       const requestData: StartProjectRequest = {
         project_id: projectId,
         original_sheet_url: projectData.googleSheetLink,
-        proceed_on_invalid_email: !projectData.processValidEmails
-        // API keys removed - backend should retrieve them from secure storage
+        proceed_on_invalid_email: !projectData.processValidEmails,
+        // Include the required API keys
+        openai_key: projectData.openaiKey,
+        ss_masters_key: projectData.ssMastersKey,
+        exa_api_key: projectData.exaApiKey
       };
 
       const response = await apiClient.post('/personalized-sheet', requestData);
