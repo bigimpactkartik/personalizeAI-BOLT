@@ -291,15 +291,7 @@ const DashboardPage: React.FC = () => {
               </Button>
             </Link>
             
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={() => setShowFeedbackModal(true)}
-              className="w-full sm:w-auto border-primary-300 text-primary-700 hover:bg-primary-50 hover:border-primary-400 transition-all duration-300"
-            >
-              <MessageSquare className="mr-2 h-5 w-5" />
-         
-            </Button>
+          
           </div>
         </div>
 
