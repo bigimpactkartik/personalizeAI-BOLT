@@ -37,9 +37,9 @@ const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen ai-background">
       {/* Hero Section */}
-      <section className="relative bg-white pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-gradient-to-br from-neural-50 via-white to-primary-50 pt-20 pb-16 px-4 sm:px-6 lg:px-8 neural-pattern">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <div className="flex justify-center mb-6">
@@ -49,57 +49,25 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             
-            {/* Main Heading with specified styling */}
-            <h1 
-              className="font-bold leading-tight mb-6"
-              style={{
-                fontSize: '48px',
-                color: '#1a237e',
-                fontFamily: 'system-ui, -apple-system, sans-serif'
-              }}
-            >
-              Ready to Transform Your Cold Email Strategy?
+            <h1 className="text-4xl md:text-6xl font-bold text-neural-900 mb-6 leading-tight">
+              Revolutionize Your
+              <span className="ai-text-gradient block sm:inline">
+                {' '}Cold Email{' '}
+              </span>
+              Campaigns
             </h1>
             
-            {/* Subheading with specified styling */}
-            <p 
-              className="mb-8 max-w-3xl mx-auto px-4 leading-relaxed"
-              style={{
-                fontSize: '24px',
-                color: '#424242',
-                fontWeight: '400'
-              }}
-            >
-              Join thousands of sales professionals who've already revolutionized their outreach
+            <p className="text-xl text-neural-600 mb-8 max-w-3xl mx-auto px-4 leading-relaxed">
+              Generate highly personalized cold emails at scale using advanced AI. 
+              Increase your response rates by up to 300% with intelligent targeting and automation.
             </p>
             
-            {/* CTA Button with specified styling */}
             <div className="flex justify-center px-4">
               <Link to="/register" className="w-full sm:w-auto">
-                <button
-                  className="font-medium rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                  style={{
-                    backgroundColor: '#2196f3',
-                    color: '#ffffff',
-                    padding: '16px 32px',
-                    borderRadius: '8px',
-                    fontSize: '18px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1976d2';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#2196f3';
-                  }}
-                >
-                  Get Started Free
+                <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-4 shadow-2xl">
+                  Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </button>
+                </Button>
               </Link>
             </div>
           </div>
