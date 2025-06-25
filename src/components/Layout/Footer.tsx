@@ -136,7 +136,7 @@ const Footer: React.FC = () => {
               onMouseEnter={(e) => e.currentTarget.style.color = '#60a5fa'}
               onMouseLeave={(e) => e.currentTarget.style.color = '#cbd5e1'}
             >
-              Privacy Policy
+             
             </a>
             <a 
               href="#" 
@@ -145,7 +145,7 @@ const Footer: React.FC = () => {
               onMouseEnter={(e) => e.currentTarget.style.color = '#60a5fa'}
               onMouseLeave={(e) => e.currentTarget.style.color = '#cbd5e1'}
             >
-              Terms of Service
+        
             </a>
             <a 
               href="#" 
@@ -154,7 +154,7 @@ const Footer: React.FC = () => {
               onMouseEnter={(e) => e.currentTarget.style.color = '#60a5fa'}
               onMouseLeave={(e) => e.currentTarget.style.color = '#cbd5e1'}
             >
-              Support
+          
             </a>
             <a 
               href="#" 
@@ -163,7 +163,7 @@ const Footer: React.FC = () => {
               onMouseEnter={(e) => e.currentTarget.style.color = '#60a5fa'}
               onMouseLeave={(e) => e.currentTarget.style.color = '#cbd5e1'}
             >
-              Documentation
+           
             </a>
           </div>
           
@@ -176,7 +176,7 @@ const Footer: React.FC = () => {
               className="text-sm"
               style={{ color: '#94a3b8' }}
             >
-              &copy; 2024 PERSONALIZED-AI. All rights reserved. | Built with ❤️ for modern sales teams
+              &copy; 2024 PERSONALIZED-AI. All rights reserved. 
             </p>
           </div>
         </div>
