@@ -19,6 +19,7 @@ const DashboardPage: React.FC = () => {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [downloadingProjects, setDownloadingProjects] = useState<Set<string>>(new Set());
   const [startingProjects, setStartingProjects] = useState<Set<string>>(new Set());
+  const [startedProjects, setStartedProjects] = useState<Set<string>>(new Set());
   const [startErrors, setStartErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -72,19 +73,13 @@ const DashboardPage: React.FC = () => {
         throw new Error('Missing required API keys. Please ensure the project was created with valid OpenAI, SSMasters, and Exa API keys.');
       }
 
-      // Project data with API keys from the stored project
-      const projectData = {
-        googleSheetLink: project.sheet_link,
-        processValidEmails: true, // Default to processing only valid emails
-        openaiKey: project.openai_key,
-        ssMastersKey: project.ss_masters_key,
-        exaApiKey: project.exa_api_key
-      };
-
-      const response = await projectService.startProject(projectId, projectData);
+      const response = await projectService.startProject(projectId);
       
       // Show success message
       console.log('Project started successfully:', response.message);
+      
+      // Mark project as started and hide start button
+      setStartedProjects(prev => new Set(prev).add(projectId));
       
       // Refresh the projects list to get updated status
       await fetchUserProjects();
@@ -209,9 +204,13 @@ const DashboardPage: React.FC = () => {
     return Math.round((project.row_completed / project.total_row) * 100);
   };
 
-  const isReadyToProcess = (status: string) => {
+  const isReadyToProcess = (status: string, projectId: string) => {
     const statusUpper = (status || '').toUpperCase();
-    return statusUpper === '' || statusUpper === 'READY TO PROCESS' || statusUpper === 'PENDING';
+    return (statusUpper === '' || statusUpper === 'READY TO PROCESS' || statusUpper === 'PENDING') && !startedProjects.has(projectId);
+  };
+
+  const showProcessingStarted = (projectId: string) => {
+    return startedProjects.has(projectId);
   };
 
   if (loading) {
@@ -291,7 +290,15 @@ const DashboardPage: React.FC = () => {
               </Button>
             </Link>
             
-          
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={() => setShowFeedbackModal(true)}
+              className="w-full sm:w-auto border-primary-200 text-primary-700 hover:bg-primary-50 hover:border-primary-300 transition-all duration-200"
+            >
+              <MessageSquare className="mr-2 h-5 w-5" />
+              Feedback
+            </Button>
           </div>
         </div>
 
@@ -346,6 +353,19 @@ const DashboardPage: React.FC = () => {
                         )}
                       </div>
 
+                      {/* Processing Started Message */}
+                      {showProcessingStarted(project.id) && (
+                        <div className="mt-3 p-3 bg-primary-50 border border-primary-200 rounded-lg slide-in">
+                          <div className="flex items-center space-x-2">
+                            <Loader2 className="h-4 w-4 text-primary-600 animate-spin" />
+                            <span className="text-primary-700 text-sm font-medium">Processing Started</span>
+                          </div>
+                          <p className="text-primary-600 text-sm mt-1">
+                            Your project is now being processed. You can view the progress in the project details page.
+                          </p>
+                        </div>
+                      )}
+
                       {/* Error message for start failures */}
                       {startErrors[project.id] && (
                         <div className="mt-3 p-3 bg-error-50 border border-error-200 rounded-lg slide-in">
@@ -367,7 +387,7 @@ const DashboardPage: React.FC = () => {
                     
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 flex-shrink-0">
                       {/* START button for READY TO PROCESS projects */}
-                      {isReadyToProcess(project.status) && (
+                      {isReadyToProcess(project.status, project.id) && (
                         <Button
                           onClick={() => handleStartProject(project.id)}
                           disabled={startingProjects.has(project.id)}

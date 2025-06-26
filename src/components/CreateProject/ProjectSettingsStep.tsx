@@ -171,7 +171,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
       companyTargetingBySize: {
         ...formData.companyTargetingBySize,
         [companySize]: {
-          ...formData.companyTargetingBySize[companySize as keyof typeof formData.companyTargetingBySize],
+          ...formData.companyTargetingBySize?.[companySize as keyof typeof formData.companyTargetingBySize],
           [field]: value
         }
       }

@@ -82,14 +82,14 @@ export interface ProjectFormData {
   };
   
   // Updated to match backend schema exactly
-  prompts: {
-    customPromptForExaCompanyInformationExtraction: string;
-    icebreakerPersonalizedSystemPrompt: string;
-    icebreakerPersonalizedUserPrompt: string;
+  prompts?: {
+    customPromptForExaCompanyInformationExtraction?: string;
+    icebreakerPersonalizedSystemPrompt?: string;
+    icebreakerPersonalizedUserPrompt?: string;
   };
   
   // Company size limits (backend required fields)
-  companySizeLimits: {
+  companySizeLimits?: {
     verySmallMax: number;
     smallMax: number;
     mediumMax: number;
@@ -98,7 +98,7 @@ export interface ProjectFormData {
   };
   
   // Contact limits per company size
-  contactLimits: {
+  contactLimits?: {
     verySmall: number;
     smallCompany: number;
     mediumCompany: number;
@@ -107,7 +107,7 @@ export interface ProjectFormData {
   };
   
   // Detailed targeting by company size
-  companyTargetingBySize: {
+  companyTargetingBySize?: {
     verySmall: CompanySizeTargeting;
     small: CompanySizeTargeting;
     medium: CompanySizeTargeting;
@@ -116,16 +116,10 @@ export interface ProjectFormData {
   };
   
   // Timing settings
-  timingSettings: {
+  timingSettings?: {
     daysBetweenContacts: number;
     followUpCycleDays: number;
   };
-
-  // Seniority tier fields required by backend
-  seniority_tier_1: string[];
-  seniority_tier_2: string[];
-  seniority_tier_3: string[];
-  seniority_excluded: string[];
 }
 
 export interface CompanySizeTargeting {
