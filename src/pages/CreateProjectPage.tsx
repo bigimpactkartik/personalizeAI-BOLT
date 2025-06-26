@@ -33,6 +33,7 @@ const CreateProjectPage: React.FC = () => {
     aiModel: {
       provider: 'openai-gpt4'
     },
+    // Initialize all optional fields as empty - will be sent as null if not filled
     prompts: {
       customPromptForExaCompanyInformationExtraction: '',
       icebreakerPersonalizedSystemPrompt: '',
@@ -56,12 +57,7 @@ const CreateProjectPage: React.FC = () => {
     timingSettings: {
       daysBetweenContacts: 3,
       followUpCycleDays: 7
-    },
-    // Initialize seniority tier fields required by backend
-    seniority_tier_1: [],
-    seniority_tier_2: [],
-    seniority_tier_3: [],
-    seniority_excluded: []
+    }
   });
 
   const steps = [
@@ -77,41 +73,42 @@ const CreateProjectPage: React.FC = () => {
     large: CompanySizeTargeting;
     enterprise: CompanySizeTargeting;
   } {
+    // Initialize with empty arrays - will be sent as null if not filled by user
     return {
       verySmall: {
         primaryTargetRoles: [],
         secondaryTargetRoles: [],
         exclusionRoles: [],
-        targetDepartments: ['All'],
-        exclusionDepartments: ['None']
+        targetDepartments: [],
+        exclusionDepartments: []
       },
       small: {
-        primaryTargetRoles: ['CEO', 'Founder', 'Co-Founder', 'Owner'],
-        secondaryTargetRoles: ['Director', 'Head of', 'VP'],
-        exclusionRoles: ['Intern', 'Assistant'],
-        targetDepartments: ['All'],
-        exclusionDepartments: ['None']
+        primaryTargetRoles: [],
+        secondaryTargetRoles: [],
+        exclusionRoles: [],
+        targetDepartments: [],
+        exclusionDepartments: []
       },
       medium: {
-        primaryTargetRoles: ['Director', 'VP', 'Head of'],
-        secondaryTargetRoles: ['Senior Manager', 'Manager'],
-        exclusionRoles: ['CEO', 'Founder', 'Analyst'],
-        targetDepartments: ['Sales', 'Marketing', 'Operations', 'Growth'],
-        exclusionDepartments: ['HR', 'Legal', 'Finance', 'Accounting']
+        primaryTargetRoles: [],
+        secondaryTargetRoles: [],
+        exclusionRoles: [],
+        targetDepartments: [],
+        exclusionDepartments: []
       },
       large: {
-        primaryTargetRoles: ['Director', 'Head of', 'Senior Director'],
-        secondaryTargetRoles: ['VP', 'Senior Manager'],
-        exclusionRoles: ['CEO', 'President', 'Analyst'],
-        targetDepartments: ['Sales', 'Marketing', 'Operations', 'Growth'],
-        exclusionDepartments: ['HR', 'Legal', 'Finance', 'Accounting']
+        primaryTargetRoles: [],
+        secondaryTargetRoles: [],
+        exclusionRoles: [],
+        targetDepartments: [],
+        exclusionDepartments: []
       },
       enterprise: {
-        primaryTargetRoles: ['ABM Territory'],
-        secondaryTargetRoles: ['Contact for ABM strategy'],
-        exclusionRoles: ['All'],
-        targetDepartments: ['All'],
-        exclusionDepartments: ['N/A']
+        primaryTargetRoles: [],
+        secondaryTargetRoles: [],
+        exclusionRoles: [],
+        targetDepartments: [],
+        exclusionDepartments: []
       }
     };
   }
@@ -218,18 +215,8 @@ const CreateProjectPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Ensure prompts have default values if empty
-      const finalFormData = {
-        ...formData,
-        prompts: {
-          customPromptForExaCompanyInformationExtraction: formData.prompts?.customPromptForExaCompanyInformationExtraction || 'Extract comprehensive company information including industry, size, recent news, and key decision makers from the provided data.',
-          icebreakerPersonalizedSystemPrompt: formData.prompts?.icebreakerPersonalizedSystemPrompt || 'You are an expert at creating personalized icebreakers for cold emails. Use the provided company and contact information to create engaging, relevant opening lines.',
-          icebreakerPersonalizedUserPrompt: formData.prompts?.icebreakerPersonalizedUserPrompt || 'Create a personalized icebreaker for this contact based on their role, company, and any available information about recent company developments or achievements.'
-        }
-      };
-
-      // Create the project
-      const createdProject = await projectService.createProject(finalFormData, user.uuid);
+      // Create the project - service will handle sending null for empty fields
+      const createdProject = await projectService.createProject(formData, user.uuid);
       
       setSuccess(true);
       

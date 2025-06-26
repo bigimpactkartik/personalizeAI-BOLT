@@ -4,8 +4,8 @@ import { ProjectFormData } from '../types';
 export interface ProjectCreateRequest {
   name: string;
   user_id: string;
-  description?: string;
-  sheet_link?: string;
+  description: string | null;
+  sheet_link: string | null;
   no_of_mailbox: number;
   emails_per_mailbox: number;
   email_per_contact: number;
@@ -16,7 +16,7 @@ export interface ProjectCreateRequest {
   ss_masters_key: string;
   exa_api_key: string;
   
-  // Required prompts
+  // Prompt fields - send empty string or null if not provided
   custom_prompt_for_exa_company_information_extraction: string;
   icebreaker_personalized_system_prompt: string;
   icebreaker_personalized_user_prompt: string;
@@ -35,40 +35,40 @@ export interface ProjectCreateRequest {
   company_size_large_max: number;
   company_size_enterprise_min: number;
   
-  // Primary target roles by company size
-  company_size_very_small_primary_target_roles: string[];
-  company_size_small_primary_target_roles: string[];
-  company_size_medium_primary_target_roles: string[];
-  company_size_large_primary_target_roles: string[];
-  company_size_enterprise_primary_target_roles: string[];
+  // Primary target roles by company size - send null if not provided
+  company_size_very_small_primary_target_roles: string[] | null;
+  company_size_small_primary_target_roles: string[] | null;
+  company_size_medium_primary_target_roles: string[] | null;
+  company_size_large_primary_target_roles: string[] | null;
+  company_size_enterprise_primary_target_roles: string[] | null;
   
-  // Secondary target roles by company size
-  company_size_very_small_secondary_target_roles: string[];
-  company_size_small_secondary_target_roles: string[];
-  company_size_medium_secondary_target_roles: string[];
-  company_size_large_secondary_target_roles: string[];
-  company_size_enterprise_secondary_target_roles: string[];
+  // Secondary target roles by company size - send null if not provided
+  company_size_very_small_secondary_target_roles: string[] | null;
+  company_size_small_secondary_target_roles: string[] | null;
+  company_size_medium_secondary_target_roles: string[] | null;
+  company_size_large_secondary_target_roles: string[] | null;
+  company_size_enterprise_secondary_target_roles: string[] | null;
   
-  // Exclusion roles by company size
-  company_size_very_small_exclusion_roles: string[];
-  company_size_small_exclusion_roles: string[];
-  company_size_medium_exclusion_roles: string[];
-  company_size_large_exclusion_roles: string[];
-  company_size_enterprise_exclusion_roles: string[];
+  // Exclusion roles by company size - send null if not provided
+  company_size_very_small_exclusion_roles: string[] | null;
+  company_size_small_exclusion_roles: string[] | null;
+  company_size_medium_exclusion_roles: string[] | null;
+  company_size_large_exclusion_roles: string[] | null;
+  company_size_enterprise_exclusion_roles: string[] | null;
   
-  // Target departments by company size
-  company_size_very_small_target_departments: string[];
-  company_size_small_target_departments: string[];
-  company_size_medium_target_departments: string[];
-  company_size_large_target_departments: string[];
-  company_size_enterprise_target_departments: string[];
+  // Target departments by company size - send null if not provided
+  company_size_very_small_target_departments: string[] | null;
+  company_size_small_target_departments: string[] | null;
+  company_size_medium_target_departments: string[] | null;
+  company_size_large_target_departments: string[] | null;
+  company_size_enterprise_target_departments: string[] | null;
   
-  // Exclusion departments by company size
-  company_size_very_small_exclusion_departments: string[];
-  company_size_small_exclusion_departments: string[];
-  company_size_medium_exclusion_departments: string[];
-  company_size_large_exclusion_departments: string[];
-  company_size_enterprise_exclusion_departments: string[];
+  // Exclusion departments by company size - send null if not provided
+  company_size_very_small_exclusion_departments: string[] | null;
+  company_size_small_exclusion_departments: string[] | null;
+  company_size_medium_exclusion_departments: string[] | null;
+  company_size_large_exclusion_departments: string[] | null;
+  company_size_enterprise_exclusion_departments: string[] | null;
   
   // Timing settings
   days_between_contacts: number;
@@ -236,32 +236,39 @@ class ProjectService {
   }
 
   private transformFormDataToRequest(formData: ProjectFormData, userId: string): ProjectCreateRequest {
-    // Set default prompts if empty
-    const defaultPrompts = {
-      customPromptForExaCompanyInformationExtraction: 'Extract comprehensive company information including industry, size, recent news, and key decision makers from the provided data.',
-      icebreakerPersonalizedSystemPrompt: 'You are an expert at creating personalized icebreakers for cold emails. Use the provided company and contact information to create engaging, relevant opening lines.',
-      icebreakerPersonalizedUserPrompt: 'Create a personalized icebreaker for this contact based on their role, company, and any available information about recent company developments or achievements.'
+    // Helper function to check if array has meaningful values
+    const hasValues = (arr: string[] | undefined): boolean => {
+      return arr !== undefined && arr.length > 0 && arr.some(item => item.trim() !== '');
+    };
+
+    // Helper function to clean array or return null
+    const cleanArrayOrNull = (arr: string[] | undefined): string[] | null => {
+      if (!hasValues(arr)) return null;
+      return arr!.filter(item => item.trim() !== '');
     };
 
     return {
+      // Basic project info
       name: formData.projectName,
       user_id: userId,
-      description: formData.description || null,
-      sheet_link: formData.dataSource === 'googlesheet' ? formData.googleSheetLink || null : null,
+      description: formData.description?.trim() || null,
+      sheet_link: formData.dataSource === 'googlesheet' ? (formData.googleSheetLink?.trim() || null) : null,
+      
+      // Email capacity settings
       no_of_mailbox: formData.emailCapacity.mailboxes,
       emails_per_mailbox: formData.emailCapacity.emailsPerMailbox,
       email_per_contact: formData.emailCapacity.emailsPerContact,
       batch_duration_days: formData.emailCapacity.batchDuration,
       
-      // Required API Keys - must be provided
+      // Required API Keys
       openai_key: formData.aiModel.openaiKey?.trim() || '',
       exa_api_key: formData.aiModel.exaKey?.trim() || '',
       ss_masters_key: formData.aiModel.ssmKey?.trim() || '',
       
-      // Required prompts with defaults
-      custom_prompt_for_exa_company_information_extraction: formData.prompts?.customPromptForExaCompanyInformationExtraction || defaultPrompts.customPromptForExaCompanyInformationExtraction,
-      icebreaker_personalized_system_prompt: formData.prompts?.icebreakerPersonalizedSystemPrompt || defaultPrompts.icebreakerPersonalizedSystemPrompt,
-      icebreaker_personalized_user_prompt: formData.prompts?.icebreakerPersonalizedUserPrompt || defaultPrompts.icebreakerPersonalizedUserPrompt,
+      // Prompt fields - send empty string if not provided by user
+      custom_prompt_for_exa_company_information_extraction: formData.prompts?.customPromptForExaCompanyInformationExtraction?.trim() || '',
+      icebreaker_personalized_system_prompt: formData.prompts?.icebreakerPersonalizedSystemPrompt?.trim() || '',
+      icebreaker_personalized_user_prompt: formData.prompts?.icebreakerPersonalizedUserPrompt?.trim() || '',
       
       // Contact limits
       contact_limit_very_small: formData.contactLimits?.verySmall || 2,
@@ -277,40 +284,40 @@ class ProjectService {
       company_size_large_max: formData.companySizeLimits?.largeMax || 1000,
       company_size_enterprise_min: formData.companySizeLimits?.enterpriseMin || 1001,
       
-      // Primary target roles by company size
-      company_size_very_small_primary_target_roles: formData.companyTargetingBySize?.verySmall?.primaryTargetRoles || ['ceo', 'founder', 'co-founder', 'owner', 'president'],
-      company_size_small_primary_target_roles: formData.companyTargetingBySize?.small?.primaryTargetRoles || ['ceo', 'founder', 'co-founder', 'vp', 'vice president'],
-      company_size_medium_primary_target_roles: formData.companyTargetingBySize?.medium?.primaryTargetRoles || ['director', 'vp', 'vice president', 'head of'],
-      company_size_large_primary_target_roles: formData.companyTargetingBySize?.large?.primaryTargetRoles || ['director', 'head of', 'senior director', 'vp', 'vice president'],
-      company_size_enterprise_primary_target_roles: formData.companyTargetingBySize?.enterprise?.primaryTargetRoles || ['ABM Territory'],
+      // Primary target roles by company size - send null if not provided by user
+      company_size_very_small_primary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.primaryTargetRoles),
+      company_size_small_primary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.small?.primaryTargetRoles),
+      company_size_medium_primary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.medium?.primaryTargetRoles),
+      company_size_large_primary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.large?.primaryTargetRoles),
+      company_size_enterprise_primary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.primaryTargetRoles),
       
-      // Secondary target roles by company size
-      company_size_very_small_secondary_target_roles: formData.companyTargetingBySize?.verySmall?.secondaryTargetRoles || ['director', 'head of', 'vp', 'vice president'],
-      company_size_small_secondary_target_roles: formData.companyTargetingBySize?.small?.secondaryTargetRoles || ['director', 'head of', 'senior manager', 'manager'],
-      company_size_medium_secondary_target_roles: formData.companyTargetingBySize?.medium?.secondaryTargetRoles || ['senior manager', 'manager', 'senior director'],
-      company_size_large_secondary_target_roles: formData.companyTargetingBySize?.large?.secondaryTargetRoles || ['VP', 'Senior Manager'],
-      company_size_enterprise_secondary_target_roles: formData.companyTargetingBySize?.enterprise?.secondaryTargetRoles || ['Contact for ABM strategy'],
+      // Secondary target roles by company size - send null if not provided by user
+      company_size_very_small_secondary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.secondaryTargetRoles),
+      company_size_small_secondary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.small?.secondaryTargetRoles),
+      company_size_medium_secondary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.medium?.secondaryTargetRoles),
+      company_size_large_secondary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.large?.secondaryTargetRoles),
+      company_size_enterprise_secondary_target_roles: cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.secondaryTargetRoles),
       
-      // Exclusion roles by company size
-      company_size_very_small_exclusion_roles: formData.companyTargetingBySize?.verySmall?.exclusionRoles || ['intern', 'assistant', 'coordinator', 'analyst'],
-      company_size_small_exclusion_roles: formData.companyTargetingBySize?.small?.exclusionRoles || ['Intern', 'Assistant'],
-      company_size_medium_exclusion_roles: formData.companyTargetingBySize?.medium?.exclusionRoles || ['CEO', 'Founder', 'Analyst'],
-      company_size_large_exclusion_roles: formData.companyTargetingBySize?.large?.exclusionRoles || ['CEO', 'President', 'Analyst'],
-      company_size_enterprise_exclusion_roles: formData.companyTargetingBySize?.enterprise?.exclusionRoles || ['All'],
+      // Exclusion roles by company size - send null if not provided by user
+      company_size_very_small_exclusion_roles: cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.exclusionRoles),
+      company_size_small_exclusion_roles: cleanArrayOrNull(formData.companyTargetingBySize?.small?.exclusionRoles),
+      company_size_medium_exclusion_roles: cleanArrayOrNull(formData.companyTargetingBySize?.medium?.exclusionRoles),
+      company_size_large_exclusion_roles: cleanArrayOrNull(formData.companyTargetingBySize?.large?.exclusionRoles),
+      company_size_enterprise_exclusion_roles: cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.exclusionRoles),
       
-      // Target departments by company size
-      company_size_very_small_target_departments: formData.companyTargetingBySize?.verySmall?.targetDepartments || ['All'],
-      company_size_small_target_departments: formData.companyTargetingBySize?.small?.targetDepartments || ['All'],
-      company_size_medium_target_departments: formData.companyTargetingBySize?.medium?.targetDepartments || ['Sales', 'Marketing', 'Operations', 'Growth'],
-      company_size_large_target_departments: formData.companyTargetingBySize?.large?.targetDepartments || ['Sales', 'Marketing', 'Operations', 'Growth'],
-      company_size_enterprise_target_departments: formData.companyTargetingBySize?.enterprise?.targetDepartments || ['All'],
+      // Target departments by company size - send null if not provided by user
+      company_size_very_small_target_departments: cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.targetDepartments),
+      company_size_small_target_departments: cleanArrayOrNull(formData.companyTargetingBySize?.small?.targetDepartments),
+      company_size_medium_target_departments: cleanArrayOrNull(formData.companyTargetingBySize?.medium?.targetDepartments),
+      company_size_large_target_departments: cleanArrayOrNull(formData.companyTargetingBySize?.large?.targetDepartments),
+      company_size_enterprise_target_departments: cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.targetDepartments),
       
-      // Exclusion departments by company size
-      company_size_very_small_exclusion_departments: formData.companyTargetingBySize?.verySmall?.exclusionDepartments || ['None'],
-      company_size_small_exclusion_departments: formData.companyTargetingBySize?.small?.exclusionDepartments || ['None'],
-      company_size_medium_exclusion_departments: formData.companyTargetingBySize?.medium?.exclusionDepartments || ['HR', 'Legal', 'Finance', 'Accounting'],
-      company_size_large_exclusion_departments: formData.companyTargetingBySize?.large?.exclusionDepartments || ['HR', 'Legal', 'Finance', 'Accounting'],
-      company_size_enterprise_exclusion_departments: formData.companyTargetingBySize?.enterprise?.exclusionDepartments || ['N/A'],
+      // Exclusion departments by company size - send null if not provided by user
+      company_size_very_small_exclusion_departments: cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.exclusionDepartments),
+      company_size_small_exclusion_departments: cleanArrayOrNull(formData.companyTargetingBySize?.small?.exclusionDepartments),
+      company_size_medium_exclusion_departments: cleanArrayOrNull(formData.companyTargetingBySize?.medium?.exclusionDepartments),
+      company_size_large_exclusion_departments: cleanArrayOrNull(formData.companyTargetingBySize?.large?.exclusionDepartments),
+      company_size_enterprise_exclusion_departments: cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.exclusionDepartments),
       
       // Timing settings
       days_between_contacts: formData.timingSettings?.daysBetweenContacts || 3,
@@ -326,18 +333,26 @@ class ProjectService {
       multipartFormData.append('file', formData.excelFile);
     }
     
-    // Set default prompts if empty
-    const defaultPrompts = {
-      customPromptForExaCompanyInformationExtraction: 'Extract comprehensive company information including industry, size, recent news, and key decision makers from the provided data.',
-      icebreakerPersonalizedSystemPrompt: 'You are an expert at creating personalized icebreakers for cold emails. Use the provided company and contact information to create engaging, relevant opening lines.',
-      icebreakerPersonalizedUserPrompt: 'Create a personalized icebreaker for this contact based on their role, company, and any available information about recent company developments or achievements.'
+    // Helper function to check if array has meaningful values
+    const hasValues = (arr: string[] | undefined): boolean => {
+      return arr !== undefined && arr.length > 0 && arr.some(item => item.trim() !== '');
+    };
+
+    // Helper function to clean array or return null
+    const cleanArrayOrNull = (arr: string[] | undefined): string[] | null => {
+      if (!hasValues(arr)) return null;
+      return arr!.filter(item => item.trim() !== '');
     };
     
     // Add basic project information
     multipartFormData.append('name', formData.projectName);
     multipartFormData.append('user_id', userId);
-    if (formData.description) {
-      multipartFormData.append('description', formData.description);
+    
+    // Add description only if provided
+    if (formData.description?.trim()) {
+      multipartFormData.append('description', formData.description.trim());
+    } else {
+      multipartFormData.append('description', '');
     }
     
     // Add required API Keys
@@ -351,13 +366,13 @@ class ProjectService {
     multipartFormData.append('email_per_contact', formData.emailCapacity.emailsPerContact.toString());
     multipartFormData.append('batch_duration_days', formData.emailCapacity.batchDuration.toString());
     
-    // Add required prompts with defaults
+    // Add prompt fields - send empty string if not provided by user
     multipartFormData.append('custom_prompt_for_exa_company_information_extraction', 
-      formData.prompts?.customPromptForExaCompanyInformationExtraction || defaultPrompts.customPromptForExaCompanyInformationExtraction);
+      formData.prompts?.customPromptForExaCompanyInformationExtraction?.trim() || '');
     multipartFormData.append('icebreaker_personalized_system_prompt', 
-      formData.prompts?.icebreakerPersonalizedSystemPrompt || defaultPrompts.icebreakerPersonalizedSystemPrompt);
+      formData.prompts?.icebreakerPersonalizedSystemPrompt?.trim() || '');
     multipartFormData.append('icebreaker_personalized_user_prompt', 
-      formData.prompts?.icebreakerPersonalizedUserPrompt || defaultPrompts.icebreakerPersonalizedUserPrompt);
+      formData.prompts?.icebreakerPersonalizedUserPrompt?.trim() || '');
     
     // Add contact limits
     multipartFormData.append('contact_limit_very_small', (formData.contactLimits?.verySmall || 2).toString());
@@ -373,65 +388,110 @@ class ProjectService {
     multipartFormData.append('company_size_large_max', (formData.companySizeLimits?.largeMax || 1000).toString());
     multipartFormData.append('company_size_enterprise_min', (formData.companySizeLimits?.enterpriseMin || 1001).toString());
     
-    // Add primary target roles by company size (stringify arrays)
+    // Add primary target roles by company size - send null if not provided by user
+    const verySmallPrimary = cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.primaryTargetRoles);
     multipartFormData.append('company_size_very_small_primary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.verySmall?.primaryTargetRoles || ['ceo', 'founder', 'co-founder', 'owner', 'president']));
+      verySmallPrimary ? JSON.stringify(verySmallPrimary) : 'null');
+    
+    const smallPrimary = cleanArrayOrNull(formData.companyTargetingBySize?.small?.primaryTargetRoles);
     multipartFormData.append('company_size_small_primary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.small?.primaryTargetRoles || ['ceo', 'founder', 'co-founder', 'vp', 'vice president']));
+      smallPrimary ? JSON.stringify(smallPrimary) : 'null');
+    
+    const mediumPrimary = cleanArrayOrNull(formData.companyTargetingBySize?.medium?.primaryTargetRoles);
     multipartFormData.append('company_size_medium_primary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.medium?.primaryTargetRoles || ['director', 'vp', 'vice president', 'head of']));
+      mediumPrimary ? JSON.stringify(mediumPrimary) : 'null');
+    
+    const largePrimary = cleanArrayOrNull(formData.companyTargetingBySize?.large?.primaryTargetRoles);
     multipartFormData.append('company_size_large_primary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.large?.primaryTargetRoles || ['director', 'head of', 'senior director', 'vp', 'vice president']));
+      largePrimary ? JSON.stringify(largePrimary) : 'null');
+    
+    const enterprisePrimary = cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.primaryTargetRoles);
     multipartFormData.append('company_size_enterprise_primary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.enterprise?.primaryTargetRoles || ['ABM Territory']));
+      enterprisePrimary ? JSON.stringify(enterprisePrimary) : 'null');
     
-    // Add secondary target roles by company size (stringify arrays)
+    // Add secondary target roles by company size - send null if not provided by user
+    const verySmallSecondary = cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.secondaryTargetRoles);
     multipartFormData.append('company_size_very_small_secondary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.verySmall?.secondaryTargetRoles || ['director', 'head of', 'vp', 'vice president']));
+      verySmallSecondary ? JSON.stringify(verySmallSecondary) : 'null');
+    
+    const smallSecondary = cleanArrayOrNull(formData.companyTargetingBySize?.small?.secondaryTargetRoles);
     multipartFormData.append('company_size_small_secondary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.small?.secondaryTargetRoles || ['director', 'head of', 'senior manager', 'manager']));
+      smallSecondary ? JSON.stringify(smallSecondary) : 'null');
+    
+    const mediumSecondary = cleanArrayOrNull(formData.companyTargetingBySize?.medium?.secondaryTargetRoles);
     multipartFormData.append('company_size_medium_secondary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.medium?.secondaryTargetRoles || ['senior manager', 'manager', 'senior director']));
+      mediumSecondary ? JSON.stringify(mediumSecondary) : 'null');
+    
+    const largeSecondary = cleanArrayOrNull(formData.companyTargetingBySize?.large?.secondaryTargetRoles);
     multipartFormData.append('company_size_large_secondary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.large?.secondaryTargetRoles || ['VP', 'Senior Manager']));
+      largeSecondary ? JSON.stringify(largeSecondary) : 'null');
+    
+    const enterpriseSecondary = cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.secondaryTargetRoles);
     multipartFormData.append('company_size_enterprise_secondary_target_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.enterprise?.secondaryTargetRoles || ['Contact for ABM strategy']));
+      enterpriseSecondary ? JSON.stringify(enterpriseSecondary) : 'null');
     
-    // Add exclusion roles by company size (stringify arrays)
+    // Add exclusion roles by company size - send null if not provided by user
+    const verySmallExclusion = cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.exclusionRoles);
     multipartFormData.append('company_size_very_small_exclusion_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.verySmall?.exclusionRoles || ['intern', 'assistant', 'coordinator', 'analyst']));
+      verySmallExclusion ? JSON.stringify(verySmallExclusion) : 'null');
+    
+    const smallExclusion = cleanArrayOrNull(formData.companyTargetingBySize?.small?.exclusionRoles);
     multipartFormData.append('company_size_small_exclusion_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.small?.exclusionRoles || ['Intern', 'Assistant']));
+      smallExclusion ? JSON.stringify(smallExclusion) : 'null');
+    
+    const mediumExclusion = cleanArrayOrNull(formData.companyTargetingBySize?.medium?.exclusionRoles);
     multipartFormData.append('company_size_medium_exclusion_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.medium?.exclusionRoles || ['CEO', 'Founder', 'Analyst']));
+      mediumExclusion ? JSON.stringify(mediumExclusion) : 'null');
+    
+    const largeExclusion = cleanArrayOrNull(formData.companyTargetingBySize?.large?.exclusionRoles);
     multipartFormData.append('company_size_large_exclusion_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.large?.exclusionRoles || ['CEO', 'President', 'Analyst']));
+      largeExclusion ? JSON.stringify(largeExclusion) : 'null');
+    
+    const enterpriseExclusion = cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.exclusionRoles);
     multipartFormData.append('company_size_enterprise_exclusion_roles', 
-      JSON.stringify(formData.companyTargetingBySize?.enterprise?.exclusionRoles || ['All']));
+      enterpriseExclusion ? JSON.stringify(enterpriseExclusion) : 'null');
     
-    // Add target departments by company size (stringify arrays)
+    // Add target departments by company size - send null if not provided by user
+    const verySmallTargetDepts = cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.targetDepartments);
     multipartFormData.append('company_size_very_small_target_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.verySmall?.targetDepartments || ['All']));
-    multipartFormData.append('company_size_small_target_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.small?.targetDepartments || ['All']));
-    multipartFormData.append('company_size_medium_target_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.medium?.targetDepartments || ['Sales', 'Marketing', 'Operations', 'Growth']));
-    multipartFormData.append('company_size_large_target_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.large?.targetDepartments || ['Sales', 'Marketing', 'Operations', 'Growth']));
-    multipartFormData.append('company_size_enterprise_target_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.enterprise?.targetDepartments || ['All']));
+      verySmallTargetDepts ? JSON.stringify(verySmallTargetDepts) : 'null');
     
-    // Add exclusion departments by company size (stringify arrays)
+    const smallTargetDepts = cleanArrayOrNull(formData.companyTargetingBySize?.small?.targetDepartments);
+    multipartFormData.append('company_size_small_target_departments', 
+      smallTargetDepts ? JSON.stringify(smallTargetDepts) : 'null');
+    
+    const mediumTargetDepts = cleanArrayOrNull(formData.companyTargetingBySize?.medium?.targetDepartments);
+    multipartFormData.append('company_size_medium_target_departments', 
+      mediumTargetDepts ? JSON.stringify(mediumTargetDepts) : 'null');
+    
+    const largeTargetDepts = cleanArrayOrNull(formData.companyTargetingBySize?.large?.targetDepartments);
+    multipartFormData.append('company_size_large_target_departments', 
+      largeTargetDepts ? JSON.stringify(largeTargetDepts) : 'null');
+    
+    const enterpriseTargetDepts = cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.targetDepartments);
+    multipartFormData.append('company_size_enterprise_target_departments', 
+      enterpriseTargetDepts ? JSON.stringify(enterpriseTargetDepts) : 'null');
+    
+    // Add exclusion departments by company size - send null if not provided by user
+    const verySmallExclusionDepts = cleanArrayOrNull(formData.companyTargetingBySize?.verySmall?.exclusionDepartments);
     multipartFormData.append('company_size_very_small_exclusion_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.verySmall?.exclusionDepartments || ['None']));
+      verySmallExclusionDepts ? JSON.stringify(verySmallExclusionDepts) : 'null');
+    
+    const smallExclusionDepts = cleanArrayOrNull(formData.companyTargetingBySize?.small?.exclusionDepartments);
     multipartFormData.append('company_size_small_exclusion_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.small?.exclusionDepartments || ['None']));
+      smallExclusionDepts ? JSON.stringify(smallExclusionDepts) : 'null');
+    
+    const mediumExclusionDepts = cleanArrayOrNull(formData.companyTargetingBySize?.medium?.exclusionDepartments);
     multipartFormData.append('company_size_medium_exclusion_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.medium?.exclusionDepartments || ['HR', 'Legal', 'Finance', 'Accounting']));
+      mediumExclusionDepts ? JSON.stringify(mediumExclusionDepts) : 'null');
+    
+    const largeExclusionDepts = cleanArrayOrNull(formData.companyTargetingBySize?.large?.exclusionDepartments);
     multipartFormData.append('company_size_large_exclusion_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.large?.exclusionDepartments || ['HR', 'Legal', 'Finance', 'Accounting']));
+      largeExclusionDepts ? JSON.stringify(largeExclusionDepts) : 'null');
+    
+    const enterpriseExclusionDepts = cleanArrayOrNull(formData.companyTargetingBySize?.enterprise?.exclusionDepartments);
     multipartFormData.append('company_size_enterprise_exclusion_departments', 
-      JSON.stringify(formData.companyTargetingBySize?.enterprise?.exclusionDepartments || ['N/A']));
+      enterpriseExclusionDepts ? JSON.stringify(enterpriseExclusionDepts) : 'null');
     
     // Add timing settings
     multipartFormData.append('days_between_contacts', (formData.timingSettings?.daysBetweenContacts || 3).toString());
