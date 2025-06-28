@@ -859,6 +859,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => openPromptModal('customPromptForExaCompanyInformationExtraction', 'Custom Prompt for EXA Company Information Extraction', DEFAULT_PROMPTS.exa_website_summary)}
+                  className="button-hover-smooth"
                 >
                   <Eye className="mr-2 h-4 w-4" />
                   View or Edit
@@ -874,6 +875,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => openPromptModal('icebreakerPersonalizedSystemPrompt', 'Icebreaker Personalized System Prompt', DEFAULT_PROMPTS.icebreaker_system)}
+                  className="button-hover-smooth"
                 >
                   <Eye className="mr-2 h-4 w-4" />
                   View or Edit
@@ -889,6 +891,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => openPromptModal('icebreakerPersonalizedUserPrompt', 'Icebreaker Personalized User Prompt', DEFAULT_PROMPTS.icebreaker_user)}
+                  className="button-hover-smooth"
                 >
                   <Eye className="mr-2 h-4 w-4" />
                   View or Edit
@@ -938,10 +941,17 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
             </div>
 
             <div className="flex justify-end space-x-3">
-              <Button variant="outline" onClick={() => setShowPromptModal(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPromptModal(false)}
+                className="modal-button-cancel"
+              >
                 Cancel
               </Button>
-              <Button onClick={savePrompt}>
+              <Button 
+                onClick={savePrompt}
+                className="modal-button-submit"
+              >
                 Save Prompt
               </Button>
             </div>

@@ -92,7 +92,7 @@ const LoginForm: React.FC = () => {
 
   if (showForgotPassword) {
     return (
-      <div className="min-h-screen ai-background flex items-center justify-center px-4 fade-in-up neural-pattern">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 fade-in-up neural-pattern">
         <div className="w-full max-w-md">
           <Card className="p-8 neural-glow">
             <div className="text-center mb-8">
@@ -157,7 +157,7 @@ const LoginForm: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen ai-background flex items-center justify-center px-4 fade-in-up neural-pattern relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 fade-in-up neural-pattern relative">
       {/* Settings Panel */}
       <div className={`fixed top-4 right-4 z-50 transition-all duration-300 ${showSettings ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
         <Card className="p-4 neural-glow">
