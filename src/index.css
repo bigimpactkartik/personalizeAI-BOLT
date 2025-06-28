@@ -68,6 +68,59 @@
       radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 75% 75%, rgba(217, 70, 239, 0.1) 0%, transparent 50%);
   }
+
+  /* Optimized Loading Spinner */
+  .loading-spinner-optimized {
+    animation: spinOptimized 1.5s linear infinite;
+    transform-origin: center;
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  /* Fallback CSS animation for browsers without requestAnimationFrame support */
+  @keyframes spinOptimized {
+    0% {
+      transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    100% {
+      transform: translate3d(0, 0, 0) rotate(360deg);
+    }
+  }
+
+  /* Enhanced loading states */
+  .loading-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  .loading-container-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Smooth loading text animation */
+  .loading-text-pulse {
+    animation: textPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes textPulse {
+    0%, 100% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
 
 /* Page transition animations */
@@ -117,17 +170,29 @@
     }
   }
 
-  .loading-spinner {
-    animation: spin 1s linear infinite;
+  /* Optimized spinner animation with hardware acceleration */
+  .spinner-smooth {
+    animation: spinSmooth 1.5s linear infinite;
+    transform-origin: center center;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
   }
 
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
+  @keyframes spinSmooth {
+    0% {
+      transform: translate3d(0, 0, 0) rotate(0deg);
     }
-    to {
-      transform: rotate(360deg);
+    100% {
+      transform: translate3d(0, 0, 0) rotate(360deg);
     }
+  }
+
+  /* Performance optimized animations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   /* AI Platform specific animations */
@@ -213,6 +278,31 @@
 
   .status-pending {
     @apply bg-gradient-to-r from-warning-500 to-warning-600 text-white;
+  }
+
+  /* Enhanced loading states with better performance */
+  .loading-overlay-optimized {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    will-change: opacity;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  /* Prevent layout shift during loading */
+  .loading-placeholder {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -327,6 +417,23 @@ html {
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .loading-spinner-optimized,
+  .spinner-smooth {
+    animation: none !important;
   }
 }
 

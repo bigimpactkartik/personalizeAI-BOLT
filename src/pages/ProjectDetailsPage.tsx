@@ -6,8 +6,7 @@ import {
   Clock, 
   CheckCircle, 
   XCircle, 
-  AlertCircle, 
-  Loader2,
+  AlertCircle,
   FileText,
   Brain,
   Target,
@@ -28,6 +27,8 @@ import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import ProgressBar from '../components/UI/ProgressBar';
 import DownloadButton from '../components/UI/DownloadButton';
+import PageLoader from '../components/UI/PageLoader';
+import LoadingSpinner from '../components/UI/LoadingSpinner';
 import ProjectFeedbackForm from '../components/Feedback/ProjectFeedbackForm';
 import feedbackService from '../services/feedbackService';
 import { FeedbackFormData, ProjectFeedback } from '../types/feedback';
@@ -203,12 +204,10 @@ const ProjectDetailsPage: React.FC = () => {
 
   if (loading && !project) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading project details...</p>
-        </div>
-      </div>
+      <PageLoader 
+        text="Loading project details..." 
+        size="lg"
+      />
     );
   }
 
@@ -268,7 +267,7 @@ const ProjectDetailsPage: React.FC = () => {
                   )}
                   {isOngoing && (
                     <div className="flex items-center space-x-2 text-sm text-blue-600">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" showText={false} />
                       <span>Auto-updating every 60s</span>
                     </div>
                   )}
@@ -400,7 +399,7 @@ const ProjectDetailsPage: React.FC = () => {
 
                   {isOngoing && (
                     <div className="mt-4 flex items-center space-x-2 text-sm text-blue-600">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" showText={false} />
                       <span>Processing your data with AI...</span>
                     </div>
                   )}
@@ -625,8 +624,10 @@ const ProjectDetailsPage: React.FC = () => {
                 {/* Feedback List */}
                 {loadingFeedback ? (
                   <Card className="p-8 text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Loading feedback...</p>
+                    <LoadingSpinner 
+                      text="Loading feedback..." 
+                      size="md"
+                    />
                   </Card>
                 ) : existingFeedback.length > 0 ? (
                   <div className="space-y-6">

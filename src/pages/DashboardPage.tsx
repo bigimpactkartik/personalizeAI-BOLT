@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, Loader2, MessageSquare, Eye, Play } from 'lucide-react';
+import { Plus, Download, Clock, CheckCircle, XCircle, AlertCircle, MessageSquare, Eye, Play } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { PlatformFeedbackFormData } from '../types/feedback';
 import projectService, { ProjectResponse } from '../services/projectService';
 import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import Modal from '../components/UI/Modal';
+import PageLoader from '../components/UI/PageLoader';
+import LoadingSpinner from '../components/UI/LoadingSpinner';
 import PlatformFeedbackForm from '../components/Feedback/PlatformFeedbackForm';
 import feedbackService from '../services/feedbackService';
 
@@ -215,12 +217,10 @@ const DashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen ai-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto mb-4 neural-glow" />
-          <p className="text-neural-600">Loading your projects...</p>
-        </div>
-      </div>
+      <PageLoader 
+        text="Loading your projects..." 
+        size="lg"
+      />
     );
   }
 
@@ -357,7 +357,7 @@ const DashboardPage: React.FC = () => {
                       {showProcessingStarted(project.id) && (
                         <div className="mt-3 p-3 bg-primary-50 border border-primary-200 rounded-lg slide-in">
                           <div className="flex items-center space-x-2">
-                            <Loader2 className="h-4 w-4 text-primary-600 animate-spin" />
+                            <LoadingSpinner size="sm" showText={false} />
                             <span className="text-primary-700 text-sm font-medium">Processing Started</span>
                           </div>
                           <p className="text-primary-600 text-sm mt-1">
@@ -396,7 +396,7 @@ const DashboardPage: React.FC = () => {
                         >
                           {startingProjects.has(project.id) ? (
                             <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <LoadingSpinner size="sm" showText={false} className="mr-2" />
                               Starting...
                             </>
                           ) : (
@@ -432,7 +432,7 @@ const DashboardPage: React.FC = () => {
                         >
                           {downloadingProjects.has(project.id) ? (
                             <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <LoadingSpinner size="sm" showText={false} className="mr-2" />
                               Downloading...
                             </>
                           ) : (
