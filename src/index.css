@@ -69,91 +69,6 @@
       radial-gradient(circle at 75% 75%, rgba(217, 70, 239, 0.1) 0%, transparent 50%);
   }
 
-  /* Enhanced button hover effects */
-  .button-hover-smooth {
-    @apply transition-all duration-300 ease-in-out;
-  }
-
-  .button-hover-smooth:hover {
-    @apply transform scale-105 shadow-lg;
-  }
-
-  /* Modal button styles */
-  .modal-button-cancel {
-    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 transition-all duration-300 ease-in-out;
-  }
-
-  .modal-button-cancel:hover {
-    @apply shadow-md transform scale-105;
-  }
-
-  .modal-button-submit {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-300 ease-in-out;
-  }
-
-  .modal-button-submit:hover {
-    @apply shadow-lg transform scale-105;
-  }
-
-  /* Remove unwanted horizontal lines from buttons */
-  .modal-button-submit:hover::before,
-  .modal-button-submit:hover::after {
-    display: none !important;
-  }
-
-  .modal-button-cancel:hover::before,
-  .modal-button-cancel:hover::after {
-    display: none !important;
-  }
-}
-
-/* Page transition animations */
-@layer utilities {
-  .page-transition {
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .slide-in {
-    animation: slideIn 0.4s ease-out;
-  }
-  
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  .fade-in-up {
-    animation: fadeInUp 0.5s ease-out;
-  }
-  
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   /* Optimized Loading Spinner */
   .loading-spinner-optimized {
     animation: spinOptimized 1.5s linear infinite;
@@ -204,6 +119,54 @@
     }
     50% {
       opacity: 1;
+    }
+  }
+}
+
+/* Page transition animations */
+@layer utilities {
+  .page-transition {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .slide-in {
+    animation: slideIn 0.4s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .fade-in-up {
+    animation: fadeInUp 0.5s ease-out;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
