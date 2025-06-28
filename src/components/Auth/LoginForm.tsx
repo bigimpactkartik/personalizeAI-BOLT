@@ -96,7 +96,7 @@ const LoginForm: React.FC = () => {
         <div className="w-full max-w-md">
           <Card className="p-8 neural-glow">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center mx-auto mb-4 neural-glow">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-neural-900 mb-2">Reset Password</h1>
@@ -129,7 +129,7 @@ const LoginForm: React.FC = () => {
               </form>
             ) : (
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center mx-auto mb-4 neural-glow">
+                <div className="w-16 h-16 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail className="h-8 w-8 text-white" />
                 </div>
                 <p className="text-neural-600 mb-6 px-2">
@@ -182,7 +182,7 @@ const LoginForm: React.FC = () => {
       {/* Settings Button */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="fixed top-4 right-4 z-40 w-12 h-12 bg-white/80 backdrop-blur-sm border border-neural-200 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 neural-glow"
+        className="fixed top-4 right-4 z-40 w-12 h-12 bg-white/80 backdrop-blur-sm border border-neural-200 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
       >
         <Settings className="h-5 w-5 text-neural-600" />
       </button>
@@ -190,7 +190,7 @@ const LoginForm: React.FC = () => {
       <div className="w-full max-w-md">
         <Card className="p-8 neural-glow">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center mx-auto mb-4 neural-glow">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-neural-900 mb-2">Welcome Back</h1>

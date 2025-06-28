@@ -44,7 +44,7 @@ const HomePage: React.FC = () => {
           <div className="text-center">
             <div className="flex justify-center mb-6">
               <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-100 to-accent-100 text-primary-800 rounded-full text-sm font-medium border border-primary-200 backdrop-blur-sm">
-                <Zap className="h-4 w-4 neural-glow" />
+                <Zap className="h-4 w-4" />
                 <span>AI-Powered Cold Email Platform</span>
               </div>
             </div>
@@ -88,7 +88,7 @@ const HomePage: React.FC = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-xl transition-all duration-300 p-6 neural-glow" hover>
+              <Card key={index} className="text-center hover:shadow-xl transition-all duration-300 p-6" hover>
                 <div className="flex justify-center mb-4">
                   <div className="p-3 bg-gradient-to-br from-primary-100 to-accent-100 rounded-xl">
                     {feature.icon}

@@ -352,6 +352,23 @@ textarea:focus {
   box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15), 0 10px 20px rgba(217, 70, 239, 0.1);
 }
 
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .loading-spinner-optimized,
+  .spinner-smooth {
+    animation: none !important;
+  }
+}
+
 /* Mobile-specific optimizations */
 @media (max-width: 640px) {
   /* Ensure touch targets are at least 44px */
@@ -417,23 +434,6 @@ html {
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
-  }
-}
-
-/* Respect user's motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  
-  .loading-spinner-optimized,
-  .spinner-smooth {
-    animation: none !important;
   }
 }
 

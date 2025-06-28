@@ -37,8 +37,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
-              <Brain className="h-8 w-8 text-primary-600 transition-all duration-300 group-hover:scale-110 neural-glow" />
-              <div className="absolute inset-0 bg-primary-600 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
+              <Brain className="h-8 w-8 text-primary-600 transition-all duration-300 group-hover:scale-110" />
             </div>
             <span className="text-xl font-bold ai-text-gradient transition-all duration-300">
               PERSONALIZED-AI

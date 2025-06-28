@@ -65,7 +65,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <div className={`flex flex-col items-center justify-center ${className}`}>
       <div 
         ref={spinnerRef}
-        className={`${sizeClasses[size]} text-primary-600 neural-glow`}
+        className={`${sizeClasses[size]} text-primary-600`}
         style={{
           willChange: 'transform',
           backfaceVisibility: 'hidden',
