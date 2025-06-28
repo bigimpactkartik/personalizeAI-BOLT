@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Calculator, Key, Users, Settings, MessageSquare, Clock, Target, Info } from 'lucide-react';
+import { Key, Users, Target, Clock, MessageSquare, Calculator, Info, Edit, Eye } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Card from '../UI/Card';
+import Modal from '../UI/Modal';
 
 interface ProjectSettingsStepProps {
   formData: ProjectFormData;
@@ -142,13 +143,15 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
   onNext,
   onPrevious
 }) => {
-  const [showEmailCapacity, setShowEmailCapacity] = useState(false);
-  const [showPromptSettings, setShowPromptSettings] = useState(false);
-  const [showCompanyTargeting, setShowCompanyTargeting] = useState(false);
-  const [showContactLimits, setShowContactLimits] = useState(false);
-  const [showTimingSettings, setShowTimingSettings] = useState(false);
   const [calculatedCapacity, setCalculatedCapacity] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPromptModal, setShowPromptModal] = useState(false);
+  const [currentPrompt, setCurrentPrompt] = useState<{
+    key: string;
+    title: string;
+    value: string;
+    defaultValue: string;
+  } | null>(null);
 
   // Ensure page scrolls to top when component mounts
   useEffect(() => {
@@ -310,6 +313,25 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
     });
   };
 
+  const openPromptModal = (key: string, title: string, defaultValue: string) => {
+    const currentValue = formData.prompts?.[key as keyof typeof formData.prompts] || '';
+    setCurrentPrompt({
+      key,
+      title,
+      value: currentValue,
+      defaultValue
+    });
+    setShowPromptModal(true);
+  };
+
+  const savePrompt = () => {
+    if (currentPrompt) {
+      updatePrompts(currentPrompt.key, currentPrompt.value);
+      setShowPromptModal(false);
+      setCurrentPrompt(null);
+    }
+  };
+
   const companySizes = [
     { 
       key: 'verySmall', 
@@ -382,540 +404,487 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
           </p>
         </div>
 
-        <div className="space-y-6 sm:space-y-8">
-          {/* Email Capacity Settings - Collapsible */}
-          <div className="transition-all duration-300 ease-in-out">
-            <button
-              type="button"
-              onClick={() => setShowEmailCapacity(!showEmailCapacity)}
-              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
-            >
-              <Calculator className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Email Capacity Settings</span>
-              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
-                showEmailCapacity ? 'rotate-90' : ''
-              }`} />
-            </button>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              showEmailCapacity ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <Input
-                      label="No. of Mailboxes"
-                      type="number"
-                      min="1"
-                      max="100"
-                      placeholder="1-100"
-                      value={formData.emailCapacity.mailboxes}
-                      onChange={(e) => updateEmailCapacity('mailboxes', parseInt(e.target.value) || 1)}
-                      error={errors.mailboxes}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.no_of_mailbox} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Emails per Mailbox"
-                      type="number"
-                      min="1"
-                      max="1000"
-                      placeholder="1-1000"
-                      value={formData.emailCapacity.emailsPerMailbox}
-                      onChange={(e) => updateEmailCapacity('emailsPerMailbox', parseInt(e.target.value) || 1)}
-                      error={errors.emailsPerMailbox}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.emails_per_mailbox} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Batch Duration (Days)"
-                      type="number"
-                      min="1"
-                      max="365"
-                      placeholder="1-365"
-                      value={formData.emailCapacity.batchDuration}
-                      onChange={(e) => updateEmailCapacity('batchDuration', parseInt(e.target.value) || 1)}
-                      error={errors.batchDuration}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.batch_duration_days} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Emails per Contact"
-                      type="number"
-                      min="1"
-                      max="10"
-                      placeholder="1-10"
-                      value={formData.emailCapacity.emailsPerContact}
-                      onChange={(e) => updateEmailCapacity('emailsPerContact', parseInt(e.target.value) || 1)}
-                      error={errors.emailsPerContact}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.email_per_contact} />
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4 mb-4">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.emailCapacity.processValidEmails}
-                      onChange={(e) => updateEmailCapacity('processValidEmails', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-700">Process only valid emails</span>
-                  </label>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                  <Button variant="outline" onClick={calculateCapacity} className="w-full sm:w-auto transition-all duration-200">
-                    Calculate Capacity
-                  </Button>
-                  {calculatedCapacity !== null && (
-                    <div className="text-xs sm:text-sm text-gray-600 slide-in">
-                      Estimated capacity: <span className="font-semibold text-blue-600">{calculatedCapacity}</span> contacts
-                    </div>
-                  )}
-                </div>
+        <div className="space-y-8">
+          {/* 1. AI Model Configuration */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Key className="h-5 w-5 text-blue-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">AI Model Configuration</h3>
+                <p className="text-sm text-gray-600">Select and configure the AI model for your project needs</p>
               </div>
             </div>
-          </div>
+            
+            <div className="space-y-4 sm:space-y-6">
+              <Select
+                label="Select AI Model"
+                options={aiModelOptions}
+                value={formData.aiModel.provider}
+                onChange={(value) => updateAiModel('provider', value)}
+                placeholder="Choose an AI model"
+                error={errors.aiModel}
+                required
+              />
 
-          {/* AI Model Settings - Always Visible */}
-          <div className="transition-all duration-300 ease-in-out">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Key className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              AI Model Configuration
-            </h3>
-            <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-              <div className="space-y-4 sm:space-y-6">
-                <Select
-                  label="Select AI Model"
-                  options={aiModelOptions}
-                  value={formData.aiModel.provider}
-                  onChange={(value) => updateAiModel('provider', value)}
-                  placeholder="Choose an AI model"
-                  error={errors.aiModel}
+              {/* API Key Input - Shows when model is selected */}
+              {formData.aiModel.provider && (
+                <div className="slide-in">
+                  <Input
+                    label={getApiKeyLabel(formData.aiModel.provider)}
+                    type="password"
+                    placeholder={`Enter your ${getApiKeyLabel(formData.aiModel.provider)}`}
+                    value={formData.aiModel[getApiKeyField(formData.aiModel.provider) as keyof typeof formData.aiModel] || ''}
+                    onChange={(e) => updateAiModel(getApiKeyField(formData.aiModel.provider), e.target.value)}
+                    error={errors.apiKey}
+                    required
+                    helperText="Your API key will be securely stored and used only for this project"
+                  />
+                </div>
+              )}
+
+              {/* EXA API Key */}
+              <div>
+                <Input
+                  label="EXA API Key"
+                  type="password"
+                  placeholder="Enter your EXA API Key"
+                  value={formData.aiModel.exaKey || ''}
+                  onChange={(e) => updateAiModel('exaKey', e.target.value)}
+                  error={errors.exaKey}
                   required
+                  helperText="Required for company information extraction"
                 />
+              </div>
 
-                {/* API Key Input - Shows when model is selected */}
-                {formData.aiModel.provider && (
-                  <div className="slide-in">
-                    <Input
-                      label={getApiKeyLabel(formData.aiModel.provider)}
-                      type="password"
-                      placeholder={`Enter your ${getApiKeyLabel(formData.aiModel.provider)}`}
-                      value={formData.aiModel[getApiKeyField(formData.aiModel.provider) as keyof typeof formData.aiModel] || ''}
-                      onChange={(e) => updateAiModel(getApiKeyField(formData.aiModel.provider), e.target.value)}
-                      error={errors.apiKey}
-                      required
-                      helperText="Your API key will be securely stored and used only for this project"
-                    />
-                  </div>
-                )}
-
-                {/* EXA API Key */}
-                <div>
-                  <Input
-                    label="EXA API Key"
-                    type="password"
-                    placeholder="Enter your EXA API Key"
-                    value={formData.aiModel.exaKey || ''}
-                    onChange={(e) => updateAiModel('exaKey', e.target.value)}
-                    error={errors.exaKey}
-                    required
-                    helperText="Required for company information extraction"
-                  />
-                </div>
-
-                {/* SSM API Key */}
-                <div>
-                  <Input
-                    label="SSM API Key"
-                    type="password"
-                    placeholder="Enter your SSM API Key"
-                    value={formData.aiModel.ssmKey || ''}
-                    onChange={(e) => updateAiModel('ssmKey', e.target.value)}
-                    error={errors.ssmKey}
-                    required
-                    helperText="Required for secure storage and management"
-                  />
-                </div>
+              {/* SSM API Key */}
+              <div>
+                <Input
+                  label="SSM API Key"
+                  type="password"
+                  placeholder="Enter your SSM API Key"
+                  value={formData.aiModel.ssmKey || ''}
+                  onChange={(e) => updateAiModel('ssmKey', e.target.value)}
+                  error={errors.ssmKey}
+                  required
+                  helperText="Required for secure storage and management"
+                />
               </div>
             </div>
           </div>
 
-          {/* Contact Limits by Company Size - Collapsible */}
-          <div className="transition-all duration-300 ease-in-out">
-            <button
-              type="button"
-              onClick={() => setShowContactLimits(!showContactLimits)}
-              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
-            >
-              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Contact Limits by Company Size</span>
-              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
-                showContactLimits ? 'rotate-90' : ''
-              }`} />
-            </button>
+          {/* 2. Email Capacity Settings */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Calculator className="h-5 w-5 text-green-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Email Capacity Settings</h3>
+                <p className="text-sm text-gray-600">Define daily and monthly email sending limits</p>
+              </div>
+            </div>
 
-            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              showContactLimits ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <Input
-                      label="Very Small (1-10)"
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={formData.contactLimits?.verySmall || 0}
-                      onChange={(e) => updateContactLimits('verySmall', parseInt(e.target.value) || 0)}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_very_small} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Small (11-50)"
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={formData.contactLimits?.smallCompany || 0}
-                      onChange={(e) => updateContactLimits('smallCompany', parseInt(e.target.value) || 0)}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_small_company} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Medium (51-200)"
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={formData.contactLimits?.mediumCompany || 0}
-                      onChange={(e) => updateContactLimits('mediumCompany', parseInt(e.target.value) || 0)}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_medium_company} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Large (201-1000)"
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={formData.contactLimits?.largeCompany || 0}
-                      onChange={(e) => updateContactLimits('largeCompany', parseInt(e.target.value) || 0)}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_large_company} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Enterprise (1000+)"
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={formData.contactLimits?.enterprise || 0}
-                      onChange={(e) => updateContactLimits('enterprise', parseInt(e.target.value) || 0)}
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_enterprise} />
-                  </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div>
+                <Input
+                  label="No. of Mailboxes"
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="1-100"
+                  value={formData.emailCapacity.mailboxes}
+                  onChange={(e) => updateEmailCapacity('mailboxes', parseInt(e.target.value) || 1)}
+                  error={errors.mailboxes}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.no_of_mailbox} />
+              </div>
+              <div>
+                <Input
+                  label="Emails per Mailbox"
+                  type="number"
+                  min="1"
+                  max="1000"
+                  placeholder="1-1000"
+                  value={formData.emailCapacity.emailsPerMailbox}
+                  onChange={(e) => updateEmailCapacity('emailsPerMailbox', parseInt(e.target.value) || 1)}
+                  error={errors.emailsPerMailbox}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.emails_per_mailbox} />
+              </div>
+              <div>
+                <Input
+                  label="Batch Duration (Days)"
+                  type="number"
+                  min="1"
+                  max="365"
+                  placeholder="1-365"
+                  value={formData.emailCapacity.batchDuration}
+                  onChange={(e) => updateEmailCapacity('batchDuration', parseInt(e.target.value) || 1)}
+                  error={errors.batchDuration}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.batch_duration_days} />
+              </div>
+              <div>
+                <Input
+                  label="Emails per Contact"
+                  type="number"
+                  min="1"
+                  max="10"
+                  placeholder="1-10"
+                  value={formData.emailCapacity.emailsPerContact}
+                  onChange={(e) => updateEmailCapacity('emailsPerContact', parseInt(e.target.value) || 1)}
+                  error={errors.emailsPerContact}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.email_per_contact} />
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4 mb-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.emailCapacity.processValidEmails}
+                  onChange={(e) => updateEmailCapacity('processValidEmails', e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
+                />
+                <span className="text-xs sm:text-sm text-gray-700">Process only valid emails</span>
+              </label>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <Button variant="outline" onClick={calculateCapacity} className="w-full sm:w-auto transition-all duration-200">
+                Calculate Capacity
+              </Button>
+              {calculatedCapacity !== null && (
+                <div className="text-xs sm:text-sm text-gray-600 slide-in">
+                  Estimated capacity: <span className="font-semibold text-blue-600">{calculatedCapacity}</span> contacts
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* 3. Contact Limits by Company Size */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Users className="h-5 w-5 text-purple-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Contact Limits by Company Size</h3>
+                <p className="text-sm text-gray-600">Set maximum contacts based on target company size</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <Input
+                  label="Very Small (1-10)"
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={formData.contactLimits?.verySmall || 0}
+                  onChange={(e) => updateContactLimits('verySmall', parseInt(e.target.value) || 0)}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_very_small} />
+              </div>
+              <div>
+                <Input
+                  label="Small (11-50)"
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={formData.contactLimits?.smallCompany || 0}
+                  onChange={(e) => updateContactLimits('smallCompany', parseInt(e.target.value) || 0)}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_small_company} />
+              </div>
+              <div>
+                <Input
+                  label="Medium (51-200)"
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={formData.contactLimits?.mediumCompany || 0}
+                  onChange={(e) => updateContactLimits('mediumCompany', parseInt(e.target.value) || 0)}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_medium_company} />
+              </div>
+              <div>
+                <Input
+                  label="Large (201-1000)"
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={formData.contactLimits?.largeCompany || 0}
+                  onChange={(e) => updateContactLimits('largeCompany', parseInt(e.target.value) || 0)}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_large_company} />
+              </div>
+              <div>
+                <Input
+                  label="Enterprise (1000+)"
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={formData.contactLimits?.enterprise || 0}
+                  onChange={(e) => updateContactLimits('enterprise', parseInt(e.target.value) || 0)}
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.contact_limit_enterprise} />
               </div>
             </div>
           </div>
 
-          {/* Company Targeting Settings - Collapsible */}
-          <div className="transition-all duration-300 ease-in-out">
-            <button
-              type="button"
-              onClick={() => setShowCompanyTargeting(!showCompanyTargeting)}
-              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
-            >
-              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Company Targeting Settings</span>
-              <span className="text-xs text-gray-500 ml-2">(Optional - defaults will be used if empty)</span>
-              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
-                showCompanyTargeting ? 'rotate-90' : ''
-              }`} />
-            </button>
+          {/* 4. Company Targeting Settings */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Target className="h-5 w-5 text-orange-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Company Targeting Settings</h3>
+                <p className="text-sm text-gray-600">Configure company targeting criteria and preferences</p>
+              </div>
+            </div>
 
-            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              showCompanyTargeting ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> These targeting settings are optional. If left empty, we will use our optimized default targeting that works well for most use cases.
-                  </p>
-                </div>
-                
-                <div className="space-y-6">
-                  {companySizes.map((size) => (
-                    <div key={size.key} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
-                      <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
-                        {size.label}
-                      </h4>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Primary Target Roles
-                          </label>
-                          <textarea
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                            rows={2}
-                            placeholder="Enter roles separated by commas (e.g., CEO, Founder, Director)"
-                            value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.primaryTargetRoles?.join(', ') || ''}
-                            onChange={(e) => updateCompanyTargeting(size.key, 'primaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                          />
-                          <DefaultValueIndicator value={size.defaultPrimary} />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Secondary Target Roles
-                          </label>
-                          <textarea
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                            rows={2}
-                            placeholder="Enter secondary roles separated by commas"
-                            value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.secondaryTargetRoles?.join(', ') || ''}
-                            onChange={(e) => updateCompanyTargeting(size.key, 'secondaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                          />
-                          <DefaultValueIndicator value={size.defaultSecondary} />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Exclusion Roles
-                          </label>
-                          <textarea
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                            rows={2}
-                            placeholder="Enter roles to exclude separated by commas"
-                            value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionRoles?.join(', ') || ''}
-                            onChange={(e) => updateCompanyTargeting(size.key, 'exclusionRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                          />
-                          <DefaultValueIndicator value={size.defaultExclusion} />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Target Departments
-                            </label>
-                            <textarea
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                              rows={2}
-                              placeholder="Enter departments separated by commas"
-                              value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.targetDepartments?.join(', ') || ''}
-                              onChange={(e) => updateCompanyTargeting(size.key, 'targetDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                            />
-                            <DefaultValueIndicator value={size.defaultTargetDepts} />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Exclusion Departments
-                            </label>
-                            <textarea
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                              rows={2}
-                              placeholder="Enter departments to exclude"
-                              value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionDepartments?.join(', ') || ''}
-                              onChange={(e) => updateCompanyTargeting(size.key, 'exclusionDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                            />
-                            <DefaultValueIndicator value={size.defaultExclusionDepts} />
-                          </div>
-                        </div>
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> These targeting settings are optional. If left empty, we will use our optimized default targeting that works well for most use cases.
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              {companySizes.map((size) => (
+                <div key={size.key} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
+                    {size.label}
+                  </h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Primary Target Roles
+                      </label>
+                      <textarea
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        rows={2}
+                        placeholder="Enter roles separated by commas (e.g., CEO, Founder, Director)"
+                        value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.primaryTargetRoles?.join(', ') || ''}
+                        onChange={(e) => updateCompanyTargeting(size.key, 'primaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                      />
+                      <DefaultValueIndicator value={size.defaultPrimary} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Secondary Target Roles
+                      </label>
+                      <textarea
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        rows={2}
+                        placeholder="Enter secondary roles separated by commas"
+                        value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.secondaryTargetRoles?.join(', ') || ''}
+                        onChange={(e) => updateCompanyTargeting(size.key, 'secondaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                      />
+                      <DefaultValueIndicator value={size.defaultSecondary} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Exclusion Roles
+                      </label>
+                      <textarea
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        rows={2}
+                        placeholder="Enter roles to exclude separated by commas"
+                        value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionRoles?.join(', ') || ''}
+                        onChange={(e) => updateCompanyTargeting(size.key, 'exclusionRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                      />
+                      <DefaultValueIndicator value={size.defaultExclusion} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Target Departments
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                          rows={2}
+                          placeholder="Enter departments separated by commas"
+                          value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.targetDepartments?.join(', ') || ''}
+                          onChange={(e) => updateCompanyTargeting(size.key, 'targetDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                        />
+                        <DefaultValueIndicator value={size.defaultTargetDepts} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Exclusion Departments
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                          rows={2}
+                          placeholder="Enter departments to exclude"
+                          value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionDepartments?.join(', ') || ''}
+                          onChange={(e) => updateCompanyTargeting(size.key, 'exclusionDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                        />
+                        <DefaultValueIndicator value={size.defaultExclusionDepts} />
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 5. Timing Settings */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Clock className="h-5 w-5 text-indigo-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Timing Settings</h3>
+                <p className="text-sm text-gray-600">Schedule and manage email sending timeframes</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Input
+                  label="Days Between Contacts"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={formData.timingSettings?.daysBetweenContacts || 3}
+                  onChange={(e) => updateTimingSettings('daysBetweenContacts', parseInt(e.target.value) || 3)}
+                  helperText="Minimum days before contacting the same person again"
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.days_between_contacts} />
+              </div>
+              <div>
+                <Input
+                  label="Follow-up Cycle Days"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={formData.timingSettings?.followUpCycleDays || 7}
+                  onChange={(e) => updateTimingSettings('followUpCycleDays', parseInt(e.target.value) || 7)}
+                  helperText="Days after which follow-up emails are triggered"
+                  style={{ 
+                    MozAppearance: 'textfield',
+                    WebkitAppearance: 'none'
+                  }}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <DefaultValueIndicator value={BACKEND_DEFAULTS.follow_up_cycle_days} />
               </div>
             </div>
           </div>
 
-          {/* Timing Settings - Collapsible */}
-          <div className="transition-all duration-300 ease-in-out">
-            <button
-              type="button"
-              onClick={() => setShowTimingSettings(!showTimingSettings)}
-              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
-            >
-              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Timing Settings</span>
-              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
-                showTimingSettings ? 'rotate-90' : ''
-              }`} />
-            </button>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              showTimingSettings ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Input
-                      label="Days Between Contacts"
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={formData.timingSettings?.daysBetweenContacts || 3}
-                      onChange={(e) => updateTimingSettings('daysBetweenContacts', parseInt(e.target.value) || 3)}
-                      helperText="Minimum days before contacting the same person again"
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.days_between_contacts} />
-                  </div>
-                  <div>
-                    <Input
-                      label="Follow-up Cycle Days"
-                      type="number"
-                      min="1"
-                      max="60"
-                      value={formData.timingSettings?.followUpCycleDays || 7}
-                      onChange={(e) => updateTimingSettings('followUpCycleDays', parseInt(e.target.value) || 7)}
-                      helperText="Days after which follow-up emails are triggered"
-                      style={{ 
-                        MozAppearance: 'textfield',
-                        WebkitAppearance: 'none'
-                      }}
-                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <DefaultValueIndicator value={BACKEND_DEFAULTS.follow_up_cycle_days} />
-                  </div>
-                </div>
+          {/* 6. AI Prompt Settings */}
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <MessageSquare className="h-5 w-5 text-pink-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">AI Prompt Settings</h3>
+                <p className="text-sm text-gray-600">Customize AI interaction prompts and behaviors</p>
               </div>
             </div>
-          </div>
 
-          {/* AI Prompt Settings - Collapsible at bottom */}
-          <div className="transition-all duration-300 ease-in-out">
-            <button
-              type="button"
-              onClick={() => setShowPromptSettings(!showPromptSettings)}
-              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left"
-            >
-              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>AI Prompt Settings</span>
-              <span className="text-xs text-gray-500 ml-2">(Optional - optimized defaults will be used if empty)</span>
-              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
-                showPromptSettings ? 'rotate-90' : ''
-              }`} />
-            </button>
-
-            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-              showPromptSettings ? 'max-h-[1200px] opacity-100 mt-4' : 'max-h-0 opacity-0'
-            }`}>
-              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> These prompts are optional. If left empty, we will use our optimized default prompts that work well for most use cases.
-                  </p>
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> These prompts are optional. If left empty, we will use our optimized default prompts that work well for most use cases.
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-gray-900">Custom Prompt for EXA Company Information Extraction</h4>
+                  <p className="text-sm text-gray-600">Configure how AI extracts company information</p>
                 </div>
-                
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Custom Prompt for EXA Company Information Extraction
-                    </label>
-                    <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                      rows={6}
-                      placeholder={DEFAULT_PROMPTS.exa_website_summary}
-                      value={formData.prompts?.customPromptForExaCompanyInformationExtraction || ''}
-                      onChange={(e) => updatePrompts('customPromptForExaCompanyInformationExtraction', e.target.value)}
-                    />
-                    <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
-                      <strong>Default prompt preview:</strong> {DEFAULT_PROMPTS.exa_website_summary.substring(0, 150)}...
-                    </div>
-                  </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openPromptModal('customPromptForExaCompanyInformationExtraction', 'Custom Prompt for EXA Company Information Extraction', DEFAULT_PROMPTS.exa_website_summary)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  View or Edit
+                </Button>
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Icebreaker Personalized System Prompt
-                    </label>
-                    <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                      rows={6}
-                      placeholder={DEFAULT_PROMPTS.icebreaker_system}
-                      value={formData.prompts?.icebreakerPersonalizedSystemPrompt || ''}
-                      onChange={(e) => updatePrompts('icebreakerPersonalizedSystemPrompt', e.target.value)}
-                    />
-                    <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
-                      <strong>Default prompt preview:</strong> {DEFAULT_PROMPTS.icebreaker_system.substring(0, 150)}...
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Icebreaker Personalized User Prompt
-                    </label>
-                    <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                      rows={6}
-                      placeholder={DEFAULT_PROMPTS.icebreaker_user}
-                      value={formData.prompts?.icebreakerPersonalizedUserPrompt || ''}
-                      onChange={(e) => updatePrompts('icebreakerPersonalizedUserPrompt', e.target.value)}
-                    />
-                    <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
-                      <strong>Default prompt preview:</strong> {DEFAULT_PROMPTS.icebreaker_user.substring(0, 150)}...
-                    </div>
-                  </div>
+              <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-gray-900">Icebreaker Personalized System Prompt</h4>
+                  <p className="text-sm text-gray-600">Define system behavior for icebreaker generation</p>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openPromptModal('icebreakerPersonalizedSystemPrompt', 'Icebreaker Personalized System Prompt', DEFAULT_PROMPTS.icebreaker_system)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  View or Edit
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-gray-900">Icebreaker Personalized User Prompt</h4>
+                  <p className="text-sm text-gray-600">Customize user instructions for icebreaker creation</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openPromptModal('icebreakerPersonalizedUserPrompt', 'Icebreaker Personalized User Prompt', DEFAULT_PROMPTS.icebreaker_user)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  View or Edit
+                </Button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-6 sm:mt-8">
+        <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 mt-8">
           <Button variant="outline" onClick={handlePrevious} className="w-full sm:w-auto transition-all duration-200">
             Previous
           </Button>
@@ -924,6 +893,47 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
           </Button>
         </div>
       </Card>
+
+      {/* Prompt Modal */}
+      <Modal
+        isOpen={showPromptModal}
+        onClose={() => setShowPromptModal(false)}
+        title={currentPrompt?.title || 'Edit Prompt'}
+        size="2xl"
+      >
+        {currentPrompt && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Custom Prompt
+              </label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                rows={12}
+                placeholder="Enter your custom prompt or leave empty to use default"
+                value={currentPrompt.value}
+                onChange={(e) => setCurrentPrompt({ ...currentPrompt, value: e.target.value })}
+              />
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Default Prompt</h4>
+              <div className="text-sm text-gray-700 max-h-40 overflow-y-auto custom-scrollbar whitespace-pre-wrap">
+                {currentPrompt.defaultValue}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <Button variant="outline" onClick={() => setShowPromptModal(false)}>
+                Cancel
+              </Button>
+              <Button onClick={savePrompt}>
+                Save Prompt
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

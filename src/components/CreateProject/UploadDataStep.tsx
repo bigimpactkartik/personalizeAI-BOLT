@@ -28,9 +28,8 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
   const requiredColumns = [
     { name: 'Email', required: true },
     { name: 'First Name', required: false },
-    { name: 'Last Name', required: false },
     { name: 'Job Title', required: true },
-    { name: 'Department', required: false, preferred: true },
+    { name: 'Department', required: true, preferred: false },
     { name: 'Seniority', required: true },
     { name: 'Role', required: true },
     { name: 'Company', required: true },
@@ -206,7 +205,7 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
                   <span className={`text-xs sm:text-sm ${
                     column.required ? 'font-medium text-gray-900' : column.preferred ? 'font-medium text-yellow-700' : 'text-gray-700'
                   }`}>
-                    {column.name} {column.required && '(Required)'} {column.preferred && '(Preferred)'}
+                    {column.name} {column.required && <span className="text-red-500">*</span>} {column.preferred && '(Preferred)'}
                   </span>
                 </div>
               ))}
