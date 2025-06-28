@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle, Settings } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
 import Card from '../UI/Card';
+import ThemeToggle from '../UI/ThemeToggle';
 import PasswordStrengthIndicator from '../UI/PasswordStrengthIndicator';
 
 const SignupForm: React.FC = () => {
@@ -19,6 +20,7 @@ const SignupForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   
   const { signup } = useAuth();
   const navigate = useNavigate();
@@ -118,10 +120,42 @@ const SignupForm: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 py-8 fade-in-up">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 py-8 fade-in-up relative">
+      {/* Settings Panel */}
+      <div className={`fixed top-4 right-4 z-50 transition-all duration-300 ${showSettings ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+        <Card className="p-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Settings</h3>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="text-gray-500 hover:text-gray-700 text-lg"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-gray-700">Theme</span>
+              <ThemeToggle size="sm" />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Settings Button */}
+      <button
+        onClick={() => setShowSettings(!showSettings)}
+        className="fixed top-4 right-4 z-40 w-12 h-12 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+      >
+        <Settings className="h-5 w-5 text-gray-600" />
+      </button>
+
       <div className="w-full max-w-md">
         <Card className="p-6 sm:p-8">
           <div className="text-center mb-6 sm:mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="h-8 w-8 text-white" />
+            </div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Create Account</h1>
             <p className="text-sm sm:text-base text-gray-600">Join thousands of professionals using PERSONALIZED-AI</p>
           </div>

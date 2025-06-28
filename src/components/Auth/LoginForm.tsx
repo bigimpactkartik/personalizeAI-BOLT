@@ -92,15 +92,15 @@ const LoginForm: React.FC = () => {
 
   if (showForgotPassword) {
     return (
-      <div className="min-h-screen ai-background flex items-center justify-center px-4 fade-in-up neural-pattern">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 fade-in-up">
         <div className="w-full max-w-md">
-          <Card className="p-8 neural-glow">
+          <Card className="p-8">
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-neural-900 mb-2">Reset Password</h1>
-              <p className="text-neural-600 px-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Reset Password</h1>
+              <p className="text-gray-600 px-2">
                 {forgotPasswordSent 
                   ? 'Check your email for reset instructions'
                   : 'Enter your email to receive reset instructions'
@@ -120,7 +120,7 @@ const LoginForm: React.FC = () => {
                     required
                     className="pl-10"
                   />
-                  <Mail className="absolute left-3 top-9 h-5 w-5 text-neural-400" />
+                  <Mail className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
                 </div>
 
                 <Button type="submit" className="w-full" size="lg">
@@ -132,8 +132,8 @@ const LoginForm: React.FC = () => {
                 <div className="w-16 h-16 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail className="h-8 w-8 text-white" />
                 </div>
-                <p className="text-neural-600 mb-6 px-2">
-                  We've sent password reset instructions to <strong className="text-neural-900 break-all">{forgotPasswordEmail}</strong>
+                <p className="text-gray-600 mb-6 px-2">
+                  We've sent password reset instructions to <strong className="text-gray-900 break-all">{forgotPasswordEmail}</strong>
                 </p>
               </div>
             )}
@@ -157,22 +157,22 @@ const LoginForm: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen ai-background flex items-center justify-center px-4 fade-in-up neural-pattern relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center px-4 fade-in-up relative">
       {/* Settings Panel */}
       <div className={`fixed top-4 right-4 z-50 transition-all duration-300 ${showSettings ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-        <Card className="p-4 neural-glow">
+        <Card className="p-4">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-neural-900">Settings</h3>
+              <h3 className="font-semibold text-gray-900">Settings</h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-neural-500 hover:text-neural-700 text-lg"
+                className="text-gray-500 hover:text-gray-700 text-lg"
               >
                 ×
               </button>
             </div>
             <div className="flex items-center space-x-3">
-              <span className="text-sm text-neural-700">Theme</span>
+              <span className="text-sm text-gray-700">Theme</span>
               <ThemeToggle size="sm" />
             </div>
           </div>
@@ -182,26 +182,26 @@ const LoginForm: React.FC = () => {
       {/* Settings Button */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="fixed top-4 right-4 z-40 w-12 h-12 bg-white/80 backdrop-blur-sm border border-neural-200 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+        className="fixed top-4 right-4 z-40 w-12 h-12 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
       >
-        <Settings className="h-5 w-5 text-neural-600" />
+        <Settings className="h-5 w-5 text-gray-600" />
       </button>
 
       <div className="w-full max-w-md">
-        <Card className="p-8 neural-glow">
+        <Card className="p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-neural-900 mb-2">Welcome Back</h1>
-            <p className="text-neural-600">Sign in to your account to continue</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+            <p className="text-gray-600">Sign in to your account to continue</p>
           </div>
 
           {errors.general && (
-            <div className="mb-4 p-3 bg-error-50 border border-error-200 rounded-lg slide-in">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg slide-in">
               <div className="flex items-center space-x-2">
-                <AlertCircle className="h-4 w-4 text-error-600 flex-shrink-0" />
-                <span className="text-error-600 text-sm">{errors.general}</span>
+                <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                <span className="text-red-600 text-sm">{errors.general}</span>
               </div>
             </div>
           )}
@@ -219,7 +219,7 @@ const LoginForm: React.FC = () => {
                 required
                 className="pl-10"
               />
-              <Mail className="absolute left-3 top-9 h-5 w-5 text-neural-400" />
+              <Mail className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
             </div>
 
             <div className="relative">
@@ -234,11 +234,11 @@ const LoginForm: React.FC = () => {
                 required
                 className="pl-10 pr-10"
               />
-              <Lock className="absolute left-3 top-9 h-5 w-5 text-neural-400" />
+              <Lock className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-neural-400 hover:text-neural-600 transition-colors duration-300"
+                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600 transition-colors duration-300"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
@@ -248,9 +248,9 @@ const LoginForm: React.FC = () => {
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neural-300 rounded transition-colors duration-300"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-300"
                 />
-                <span className="ml-2 text-sm text-neural-600">Remember me</span>
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
               <button
                 type="button"
@@ -280,7 +280,7 @@ const LoginForm: React.FC = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-neural-600">
+            <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <Link to="/register" className="text-primary-600 hover:text-primary-500 font-medium transition-colors duration-300">
                 Sign up
