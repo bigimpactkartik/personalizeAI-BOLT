@@ -33,7 +33,7 @@ const UploadDataStep: React.FC<UploadDataStepProps> = ({
     { name: 'Seniority', required: true },
     { name: 'Role', required: true },
     { name: 'Company', required: true },
-    { name: 'Company Size', required: false },
+    { name: 'Company Size', required: true },
     { name: 'Company Website', required: true },
     { name: 'LinkedIn Profile of Company', required: true }
   ];

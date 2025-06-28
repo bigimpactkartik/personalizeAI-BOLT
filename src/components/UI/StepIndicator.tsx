@@ -43,7 +43,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
                 </span>
               </div>
               {index < steps.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-4 sm:mx-6 ${
+                <div className={`flex-1 h-0.5 mx-6 sm:mx-8 ${
                   isCompleted ? 'bg-green-600' : 'bg-gray-300'
                 }`} />
               )}

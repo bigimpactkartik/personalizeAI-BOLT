@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Key, Users, Target, Clock, MessageSquare, Calculator, Info, Edit, Eye } from 'lucide-react';
+import { ChevronDown, ChevronRight, Key, Users, Target, Clock, MessageSquare, Calculator, Info, Edit, Eye } from 'lucide-react';
 import { ProjectFormData } from '../../types';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
@@ -143,6 +143,7 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
   onNext,
   onPrevious
 }) => {
+  const [showCompanyTargeting, setShowCompanyTargeting] = useState(false);
   const [calculatedCapacity, setCalculatedCapacity] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPromptModal, setShowPromptModal] = useState(false);
@@ -675,99 +676,112 @@ const ProjectSettingsStep: React.FC<ProjectSettingsStepProps> = ({
             </div>
           </div>
 
-          {/* 4. Company Targeting Settings */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <Target className="h-5 w-5 text-orange-600" />
-              <div>
+          {/* 4. Company Targeting Settings - Collapsible */}
+          <div className="transition-all duration-300 ease-in-out">
+            <button
+              type="button"
+              onClick={() => setShowCompanyTargeting(!showCompanyTargeting)}
+              className="flex items-center space-x-2 text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors w-full text-left bg-gray-50 rounded-lg p-6"
+            >
+              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
+              <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900">Company Targeting Settings</h3>
                 <p className="text-sm text-gray-600">Configure company targeting criteria and preferences</p>
               </div>
-            </div>
+              <ChevronRight className={`h-4 w-4 sm:h-5 sm:w-5 ml-auto transition-transform duration-300 ${
+                showCompanyTargeting ? 'rotate-90' : ''
+              }`} />
+            </button>
 
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> These targeting settings are optional. If left empty, we will use our optimized default targeting that works well for most use cases.
-              </p>
-            </div>
-            
-            <div className="space-y-6">
-              {companySizes.map((size) => (
-                <div key={size.key} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
-                    {size.label}
-                  </h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Primary Target Roles
-                      </label>
-                      <textarea
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                        rows={2}
-                        placeholder="Enter roles separated by commas (e.g., CEO, Founder, Director)"
-                        value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.primaryTargetRoles?.join(', ') || ''}
-                        onChange={(e) => updateCompanyTargeting(size.key, 'primaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                      />
-                      <DefaultValueIndicator value={size.defaultPrimary} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Secondary Target Roles
-                      </label>
-                      <textarea
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                        rows={2}
-                        placeholder="Enter secondary roles separated by commas"
-                        value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.secondaryTargetRoles?.join(', ') || ''}
-                        onChange={(e) => updateCompanyTargeting(size.key, 'secondaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                      />
-                      <DefaultValueIndicator value={size.defaultSecondary} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Exclusion Roles
-                      </label>
-                      <textarea
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                        rows={2}
-                        placeholder="Enter roles to exclude separated by commas"
-                        value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionRoles?.join(', ') || ''}
-                        onChange={(e) => updateCompanyTargeting(size.key, 'exclusionRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                      />
-                      <DefaultValueIndicator value={size.defaultExclusion} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Target Departments
-                        </label>
-                        <textarea
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                          rows={2}
-                          placeholder="Enter departments separated by commas"
-                          value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.targetDepartments?.join(', ') || ''}
-                          onChange={(e) => updateCompanyTargeting(size.key, 'targetDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                        />
-                        <DefaultValueIndicator value={size.defaultTargetDepts} />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Exclusion Departments
-                        </label>
-                        <textarea
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                          rows={2}
-                          placeholder="Enter departments to exclude"
-                          value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionDepartments?.join(', ') || ''}
-                          onChange={(e) => updateCompanyTargeting(size.key, 'exclusionDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                        />
-                        <DefaultValueIndicator value={size.defaultExclusionDepts} />
-                      </div>
-                    </div>
-                  </div>
+            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+              showCompanyTargeting ? 'max-h-[2000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="bg-gray-50 rounded-lg p-4 sm:p-6 transform transition-transform duration-300">
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> These targeting settings are optional. If left empty, we will use our optimized default targeting that works well for most use cases.
+                  </p>
                 </div>
-              ))}
+                
+                <div className="space-y-6">
+                  {companySizes.map((size) => (
+                    <div key={size.key} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
+                      <h4 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">
+                        {size.label}
+                      </h4>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Primary Target Roles
+                          </label>
+                          <textarea
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                            rows={2}
+                            placeholder="Enter roles separated by commas (e.g., CEO, Founder, Director)"
+                            value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.primaryTargetRoles?.join(', ') || ''}
+                            onChange={(e) => updateCompanyTargeting(size.key, 'primaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                          />
+                          <DefaultValueIndicator value={size.defaultPrimary} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Secondary Target Roles
+                          </label>
+                          <textarea
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                            rows={2}
+                            placeholder="Enter secondary roles separated by commas"
+                            value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.secondaryTargetRoles?.join(', ') || ''}
+                            onChange={(e) => updateCompanyTargeting(size.key, 'secondaryTargetRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                          />
+                          <DefaultValueIndicator value={size.defaultSecondary} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Exclusion Roles
+                          </label>
+                          <textarea
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                            rows={2}
+                            placeholder="Enter roles to exclude separated by commas"
+                            value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionRoles?.join(', ') || ''}
+                            onChange={(e) => updateCompanyTargeting(size.key, 'exclusionRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                          />
+                          <DefaultValueIndicator value={size.defaultExclusion} />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Target Departments
+                            </label>
+                            <textarea
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                              rows={2}
+                              placeholder="Enter departments separated by commas"
+                              value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.targetDepartments?.join(', ') || ''}
+                              onChange={(e) => updateCompanyTargeting(size.key, 'targetDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                            />
+                            <DefaultValueIndicator value={size.defaultTargetDepts} />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Exclusion Departments
+                            </label>
+                            <textarea
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                              rows={2}
+                              placeholder="Enter departments to exclude"
+                              value={formData.companyTargetingBySize?.[size.key as keyof typeof formData.companyTargetingBySize]?.exclusionDepartments?.join(', ') || ''}
+                              onChange={(e) => updateCompanyTargeting(size.key, 'exclusionDepartments', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                            />
+                            <DefaultValueIndicator value={size.defaultExclusionDepts} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
